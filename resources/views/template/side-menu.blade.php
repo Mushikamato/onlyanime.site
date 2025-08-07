@@ -1,4 +1,108 @@
 <div class="side-menu px-1 px-md-2 px-lg-3">
+    
+    {{-- NEW: Animated Logo Button at Top --}}
+    <div class="logo-button-container mb-3 d-flex justify-content-center">
+        <a href="#" id="side-menu-logo-btn" class="side-menu-logo-btn">
+            <img src="{{ asset(getSetting('site.light_logo')) }}" alt="{{ __('Site logo') }}">
+        </a>
+    </div>
+
+    <style>
+    .side-menu-logo-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #55a8f9;
+        box-shadow: 0 4px 16px rgba(50,110,255,0.12);
+        transition: box-shadow 0.25s, transform 0.25s;
+        cursor: pointer;
+        text-decoration: none;
+        animation: cosplay-pulse 1.6s infinite alternate;
+        padding: 8px;
+    }
+    
+    .side-menu-logo-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+    }
+    
+    @keyframes cosplay-pulse {
+        0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12); }
+        50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17); }
+        100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12); }
+    }
+    
+    .side-menu-logo-btn:hover {
+        border-color: #3483d6;
+        background: #f4f9ff;
+        box-shadow: 0 8px 32px rgba(50,110,255,0.22);
+        animation-play-state: paused !important;
+        transform: scale(1.1);
+        text-decoration: none;
+    }
+    
+    .side-menu-logo-btn:active {
+        filter: brightness(0.96);
+        transform: scale(0.95);
+        animation-play-state: paused !important;
+    }
+    
+    /* Mobile adjustments */
+    @media (max-width: 767.98px) {
+        .side-menu-logo-btn {
+            width: 60px;
+            height: 60px;
+            border-width: 2px;
+        }
+    }
+    
+    /* Hide on very small left panel */
+    @media (max-width: 575.98px) {
+        .logo-button-container {
+            display: none !important;
+        }
+    }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const logoBtn = document.getElementById('side-menu-logo-btn');
+        if (logoBtn) {
+            logoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Scroll to top of feed/content
+                const contentWrapper = document.querySelector('.content-wrapper');
+                const feedContainer = document.querySelector('[data-feed-container]') || 
+                                    document.querySelector('.posts-wrapper') || 
+                                    document.querySelector('.feed-posts') ||
+                                    contentWrapper;
+                
+                if (feedContainer) {
+                    feedContainer.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    // Fallback: scroll window to top
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+                
+                console.log('🚀 Logo clicked - scrolling to top');
+            });
+        }
+    });
+    </script>
+
     <div class="user-details mb-4 d-flex open-menu pointer-cursor flex-row-no-rtl">
         <div class="ml-0 ml-md-2">
             @if(Auth::check())
@@ -46,25 +150,35 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{route('my.messenger.get')}}" class="nav-link {{Route::currentRouteName() == 'my.messenger.get' ? 'active' : ''}} h-pill h-pill-primary d-flex justify-content-between">
+                <a href="{{route('my.messenger.get')}}" class="nav-link h-pill h-pill-primary {{Route::currentRouteName() == 'my.messenger.get' ? 'active' : ''}} d-flex justify-content-between">
                     <div class="d-flex justify-content-center align-items-center">
                         <div class="icon-wrapper d-flex justify-content-center align-items-center position-relative">
-                            @include('elements.icon',['icon'=>'chatbubble-outline','variant'=>'large'])
-                            <div class="menu-notification-badge chat-menu-count {{(NotificationsHelper::getUnreadMessages() > 0) ? '' : 'd-none'}}">
-                                {{NotificationsHelper::getUnreadMessages()}}
+                            @include('elements.icon',['icon'=>'chatbubbles-outline','variant'=>'large'])
+                            <div class="menu-notification-badge notifications-menu-count {{(isset($messagesCountOverride) && $messagesCountOverride > 0) || (MessengerHelper::getUnreadMessagesCount() > 0) ? '' : 'd-none'}}">
+                                {{!isset($messagesCountOverride) ? MessengerHelper::getUnreadMessagesCount() : $messagesCountOverride}}
                             </div>
                         </div>
                         <span class="d-none d-md-block d-xl-block d-lg-block ml-2 text-truncate side-menu-label">{{__('Messages')}}</span>
                     </div>
                 </a>
             </li>
-            @if(getSetting('streams.streaming_driver') !== 'none')
+            <li class="nav-item">
+                <a href="{{route('search.get')}}" class="nav-link {{Route::currentRouteName() == 'search.get' ? 'active' : ''}} h-pill h-pill-primary d-flex justify-content-between">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                            @include('elements.icon',['icon'=>'compass-outline','variant'=>'large'])
+                        </div>
+                        <span class="d-none d-md-block d-xl-block d-lg-block ml-2 text-truncate side-menu-label">{{__('Explore')}}</span>
+                    </div>
+                </a>
+            </li>
+            @if(getSetting('streams.allow_streams'))
                 <li class="nav-item">
-                    <a href="{{route('search.get')}}?filter=live" class="nav-link {{Route::currentRouteName() == 'search.get' && request()->get('filter') == 'live' ? 'active' : ''}} h-pill h-pill-primary d-flex justify-content-between">
+                    <a href="{{route('public.streams.get')}}" class="nav-link {{Route::currentRouteName() == 'public.streams.get' ? 'active' : ''}} h-pill h-pill-primary d-flex justify-content-between">
                         <div class="d-flex justify-content-center align-items-center">
                             <div class="icon-wrapper d-flex justify-content-center align-items-center position-relative">
-                                @include('elements.icon',['icon'=>'play-circle-outline','variant'=>'large'])
-                                <div class="menu-notification-badge streams-menu-count {{(StreamsHelper::getPublicLiveStreamsCount() > 0) ? '' : 'd-none'}}">
+                                @include('elements.icon',['icon'=>'videocam-outline','variant'=>'large'])
+                                <div class="menu-notification-badge live-streams-menu-count {{StreamsHelper::getPublicLiveStreamsCount() > 0 ? '' : 'd-none'}}">
                                     {{StreamsHelper::getPublicLiveStreamsCount()}}
                                 </div>
                             </div>
@@ -178,13 +292,13 @@
             @endif
         @endif
 
-{{-- ================= START: MODIFIED CODE ================= --}}
-    <div class="d-flex mt-2 justify-center feed-filter-buttons">
-        <a href="{{ route('feed', ['filter' => 'cosplay']) }}"
-            class="feed-btn {{ request()->get('filter') == 'cosplay' ? 'active' : '' }}">Cosplay</a>
-        <a href="{{ route('feed', ['filter' => 'anime']) }}"
-            class="feed-btn {{ request()->get('filter') == 'anime' ? 'active' : '' }}">Anime</a>
-    </div>
-{{-- ================= END: MODIFIED CODE ================= --}}
+        {{-- ================= START: MODIFIED CODE ================= --}}
+        <div class="d-flex mt-2 justify-center feed-filter-buttons">
+            <a href="{{ route('feed', ['filter' => 'cosplay']) }}"
+                class="feed-btn {{ request()->get('filter') == 'cosplay' ? 'active' : '' }}">Cosplay</a>
+            <a href="{{ route('feed', ['filter' => 'anime']) }}"
+                class="feed-btn {{ request()->get('filter') == 'anime' ? 'active' : '' }}">Anime</a>
+        </div>
+        {{-- ================= END: MODIFIED CODE ================= --}}
     </ul>
 </div>
