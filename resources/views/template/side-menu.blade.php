@@ -1,7 +1,7 @@
 <div class="side-menu px-1 px-md-2 px-lg-3">
     
     {{-- NEW: Animated Logo Button at Top --}}
-    <div class="logo-button-container mb-3 d-flex justify-content-center">
+    <div class="logo-button-container mb-2 d-flex justify-content-start pl-2">
         <a href="#" id="side-menu-logo-btn" class="side-menu-logo-btn">
             <img src="{{ asset(getSetting('site.light_logo')) }}" alt="{{ __('Site logo') }}">
         </a>
@@ -12,8 +12,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         background: #fff;
         border: 3px solid #55a8f9;
@@ -22,7 +22,7 @@
         cursor: pointer;
         text-decoration: none;
         animation: cosplay-pulse 1.6s infinite alternate;
-        padding: 8px;
+        padding: 6px;
     }
     
     .side-menu-logo-btn img {
@@ -56,9 +56,10 @@
     /* Mobile adjustments */
     @media (max-width: 767.98px) {
         .side-menu-logo-btn {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-width: 2px;
+            padding: 4px;
         }
     }
     
@@ -103,7 +104,7 @@
     });
     </script>
 
-    <div class="user-details mb-4 d-flex open-menu pointer-cursor flex-row-no-rtl">
+    <div class="user-details mb-3 d-flex open-menu pointer-cursor flex-row-no-rtl">
         <div class="ml-0 ml-md-2">
             @if(Auth::check())
                 <img src="{{Auth::user()->avatar}}" class="rounded-circle user-avatar">
