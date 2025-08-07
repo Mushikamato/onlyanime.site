@@ -1,7 +1,7 @@
 <div class="side-menu px-1 px-md-2 px-lg-3">
     
     {{-- NEW: Animated Logo Button at Top --}}
-    <div class="logo-button-container mb-2 d-flex justify-content-start pl-2">
+    <div class="logo-button-container mb-1 d-flex justify-content-start pl-2">
         <a href="#" id="side-menu-logo-btn" class="side-menu-logo-btn">
             <img src="{{ asset(getSetting('site.light_logo')) }}" alt="{{ __('Site logo') }}">
         </a>
@@ -12,17 +12,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         background: #fff;
-        border: 3px solid #55a8f9;
-        box-shadow: 0 4px 16px rgba(50,110,255,0.12);
+        border: 2px solid #55a8f9;
+        box-shadow: 0 3px 12px rgba(50,110,255,0.1);
         transition: box-shadow 0.25s, transform 0.25s;
         cursor: pointer;
         text-decoration: none;
         animation: cosplay-pulse 1.6s infinite alternate;
-        padding: 6px;
+        padding: 4px;
     }
     
     .side-menu-logo-btn img {
@@ -33,17 +33,17 @@
     }
     
     @keyframes cosplay-pulse {
-        0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12); }
-        50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17); }
-        100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12); }
+        0% { transform: scale(1); box-shadow: 0 3px 12px rgba(50,110,255,0.1); }
+        50% { transform: scale(1.06); box-shadow: 0 6px 20px rgba(50,110,255,0.15); }
+        100% { transform: scale(1); box-shadow: 0 3px 12px rgba(50,110,255,0.1); }
     }
     
     .side-menu-logo-btn:hover {
         border-color: #3483d6;
         background: #f4f9ff;
-        box-shadow: 0 8px 32px rgba(50,110,255,0.22);
+        box-shadow: 0 6px 24px rgba(50,110,255,0.18);
         animation-play-state: paused !important;
-        transform: scale(1.1);
+        transform: scale(1.08);
         text-decoration: none;
     }
     
@@ -104,7 +104,7 @@
     });
     </script>
 
-    <div class="user-details mb-3 d-flex open-menu pointer-cursor flex-row-no-rtl">
+    <div class="user-details mb-2 d-flex open-menu pointer-cursor flex-row-no-rtl">
         <div class="ml-0 ml-md-2">
             @if(Auth::check())
                 <img src="{{Auth::user()->avatar}}" class="rounded-circle user-avatar">
