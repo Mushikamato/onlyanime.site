@@ -8,60 +8,60 @@
     </div>
 
     <style>
-    /* Even more aggressive size reduction - ~30% smaller overall */
+    /* Ultra compact menu items - another 10% smaller */
     .side-menu {
-        font-size: 0.72rem; /* Even smaller text */
+        font-size: 0.65rem; /* Even tinier text */
     }
     
     .side-menu .nav-link {
-        padding: 0.2rem 0.2rem; /* Even smaller padding */
-        margin-bottom: 0.05rem; /* Very tight spacing */
+        padding: 0.18rem 0.18rem; /* Ultra small padding */
+        margin-bottom: 0.03rem; /* Minimal spacing */
     }
     
     .side-menu .icon-wrapper {
-        width: 28px; /* Even smaller icons */
-        height: 28px;
+        width: 25px; /* Ultra small icons */
+        height: 25px;
     }
     
     .side-menu .btn {
-        padding: 0.3rem 0.4rem; /* Much smaller button padding */
-        font-size: 0.65rem; /* Even smaller button text */
-        margin-bottom: 0.15rem; /* Tighter button spacing */
+        padding: 0.25rem 0.35rem; /* Ultra small button padding */
+        font-size: 0.58rem; /* Tiny button text */
+        margin-bottom: 0.1rem; /* Minimal button spacing */
     }
     
     .side-menu .user-details {
-        margin-bottom: 0.5rem; /* Minimal spacing */
+        margin-bottom: 0.4rem; /* Ultra minimal spacing */
     }
     
     .side-menu .nav-item {
-        margin-bottom: 0.05rem; /* Extremely tight spacing between items */
+        margin-bottom: 0.03rem; /* Ultra tight spacing between items */
     }
     
     .side-menu .user-avatar {
-        width: 30px !important; /* Even smaller avatar */
-        height: 30px !important;
+        width: 27px !important; /* Ultra small avatar */
+        height: 27px !important;
     }
     
     .side-menu .side-menu-label {
-        font-size: 0.72rem; /* Smaller labels */
-        line-height: 1.2; /* Tighter line height */
+        font-size: 0.65rem; /* Tiny labels */
+        line-height: 1.1; /* Ultra tight line height */
     }
     
     .side-menu-logo-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 30px; /* Even smaller logo */
-        height: 30px;
+        width: 36px; /* 20% bigger than 30px */
+        height: 36px;
         border-radius: 50%;
         background: #fff;
-        border: 1px solid #55a8f9;
-        box-shadow: 0 1px 4px rgba(50,110,255,0.1);
+        border: 2px solid #55a8f9; /* Thicker border for prominence */
+        box-shadow: 0 2px 8px rgba(50,110,255,0.12);
         transition: box-shadow 0.25s, transform 0.25s;
         cursor: pointer;
         text-decoration: none;
         animation: cosplay-pulse 1.6s infinite alternate;
-        padding: 1px; /* Minimal padding */
+        padding: 2px; /* Better padding for bigger button */
     }
     
     .side-menu-logo-btn img {
@@ -72,17 +72,17 @@
     }
     
     @keyframes cosplay-pulse {
-        0% { transform: scale(1); box-shadow: 0 1px 4px rgba(50,110,255,0.1); }
-        50% { transform: scale(1.03); box-shadow: 0 2px 8px rgba(50,110,255,0.15); }
-        100% { transform: scale(1); box-shadow: 0 1px 4px rgba(50,110,255,0.1); }
+        0% { transform: scale(1); box-shadow: 0 2px 8px rgba(50,110,255,0.12); }
+        50% { transform: scale(1.05); box-shadow: 0 4px 16px rgba(50,110,255,0.18); }
+        100% { transform: scale(1); box-shadow: 0 2px 8px rgba(50,110,255,0.12); }
     }
     
     .side-menu-logo-btn:hover {
         border-color: #3483d6;
         background: #f4f9ff;
-        box-shadow: 0 2px 10px rgba(50,110,255,0.18);
+        box-shadow: 0 4px 20px rgba(50,110,255,0.22);
         animation-play-state: paused !important;
-        transform: scale(1.04);
+        transform: scale(1.08);
         text-decoration: none;
     }
     
@@ -95,10 +95,10 @@
     /* Mobile adjustments */
     @media (max-width: 767.98px) {
         .side-menu-logo-btn {
-            width: 28px;
-            height: 28px;
-            border-width: 1px;
-            padding: 1px;
+            width: 33px; /* 20% bigger than 28px */
+            height: 33px;
+            border-width: 2px;
+            padding: 2px;
         }
     }
     
