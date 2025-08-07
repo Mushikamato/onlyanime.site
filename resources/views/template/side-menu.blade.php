@@ -117,27 +117,63 @@
             logoBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Scroll to top of feed/content
-                const contentWrapper = document.querySelector('.content-wrapper');
-                const feedContainer = document.querySelector('[data-feed-container]') || 
-                                    document.querySelector('.posts-wrapper') || 
-                                    document.querySelector('.feed-posts') ||
-                                    contentWrapper;
+                console.log('🚀 Logo clicked - scrolling to first post');
                 
-                if (feedContainer) {
-                    feedContainer.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                } else {
-                    // Fallback: scroll window to top
+                // Try to find the first post using multiple selectors
+                const firstPost = document.querySelector(
+                    '.post-box:first-child, ' +
+                    '.post:first-child, ' +
+                    '.feed-post:first-child, ' +
+                    '.post-wrapper:first-child, ' +
+                    '.post-container:first-child, ' +
+                    '[data-post-id]:first-child, ' +
+                    '.user-post:first-child'
+                );
+                
+                if (firstPost) {
+                    // Scroll to first post with some offset for header
+                    const headerOffset = 80; // Account for fixed header
+                    const elementPosition = firstPost.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
                     window.scrollTo({
-                        top: 0,
+                        top: offsetPosition,
                         behavior: 'smooth'
                     });
+                    
+                    console.log('✅ Scrolled to first post:', firstPost);
+                } else {
+                    // Fallback: scroll to content area or top of page
+                    const contentArea = document.querySelector(
+                        '.content-wrapper, ' +
+                        '.main-content, ' +
+                        '.feed-container, ' +
+                        '.posts-container, ' +
+                        '#main-content, ' +
+                        '.container-xl'
+                    );
+                    
+                    if (contentArea) {
+                        contentArea.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                        console.log('✅ Scrolled content area to top');
+                    } else {
+                        // Final fallback: scroll window to top
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                        console.log('✅ Scrolled window to top');
+                    }
                 }
                 
-                console.log('🚀 Logo clicked - scrolling to top');
+                // Add visual feedback - brief highlight effect
+                logoBtn.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    logoBtn.style.transform = '';
+                }, 150);
             });
         }
     });
