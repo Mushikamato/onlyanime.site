@@ -47,6 +47,14 @@
     user-select: none;
     pointer-events: auto;
   }
+  
+  /* NEW: Active button styling */
+  .cosplay-btn.active {
+    background: #3483d6 !important;
+    color: #fff !important;
+    border-color: #fff !important;
+    transform: scale(1.05);
+  }
   /* --- END OF CSS FIX --- */
 
   @keyframes cosplay-pulse { 0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} 50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17);} 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} }
@@ -61,8 +69,8 @@
 @section('content')
 <div class="slot-container" style="position:relative;">
   <div class="center-buttons-absolute">
-    <a href="{{ url('/login') }}" class="cosplay-btn">Cosplay</a>
-    <a href="{{ url('/login') }}" class="cosplay-btn">Anime</a>
+    <a href="#" class="cosplay-btn" data-category="cosplay">Cosplay</a>
+    <a href="#" class="cosplay-btn" data-category="anime">Anime</a>
   </div>
 
   <div class="slot-grid-container">
@@ -118,6 +126,10 @@
     const IS_LOGGED_IN = @json(auth()->check());
 
     const allColumnElements = document.querySelectorAll('.slot-post-box-wrapper');
+    const categoryButtons = document.querySelectorAll('.cosplay-btn');
+    
+    // NEW: Add state for current selected category
+    let currentCategory = 'mixed'; // 'mixed', 'cosplay', 'anime'
 
     function createSlideHtml(item) {
         const postUrl = `/posts/${item.id}/${item.username}`;
@@ -164,7 +176,19 @@
             else {
                 el.classList.add('swiper', 'content-column');
                 el.innerHTML = '<div class="swiper-wrapper"></div>';
-                const postData = (index < dividerStartIndex) ? cosplayData : animeData;
+                
+                // MODIFIED: New data selection logic based on current category
+                let postData;
+                if (currentCategory === 'cosplay') {
+                    // ALL slots use cosplay data
+                    postData = cosplayData;
+                } else if (currentCategory === 'anime') {
+                    // ALL slots use anime data
+                    postData = animeData;
+                } else {
+                    // Mixed mode (original logic)
+                    postData = (index < dividerStartIndex) ? cosplayData : animeData;
+                }
 
                 if (postData && postData.length > 0) {
                     let finalData = [...postData];
@@ -200,6 +224,26 @@
             }
         });
     }
+
+    // NEW: Add click handlers to category buttons
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Get category from data attribute
+            const selectedCategory = this.dataset.category;
+            
+            // Update current category
+            currentCategory = selectedCategory;
+            
+            // Update button visual states
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Rebuild layout with new category
+            setupLayout();
+        });
+    });
 
     setupLayout();
     window.addEventListener('resize', setupLayout);
