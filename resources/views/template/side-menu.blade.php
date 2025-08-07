@@ -8,59 +8,60 @@
     </div>
 
     <style>
-    /* Aggressive size reduction - ~20% smaller across the board */
+    /* Even more aggressive size reduction - ~30% smaller overall */
     .side-menu {
-        font-size: 0.8rem; /* Much smaller text */
+        font-size: 0.72rem; /* Even smaller text */
     }
     
     .side-menu .nav-link {
-        padding: 0.25rem 0.25rem; /* Much smaller padding */
-        margin-bottom: 0.1rem; /* Tighter spacing */
+        padding: 0.2rem 0.2rem; /* Even smaller padding */
+        margin-bottom: 0.05rem; /* Very tight spacing */
     }
     
     .side-menu .icon-wrapper {
-        width: 32px; /* Much smaller icons */
-        height: 32px;
+        width: 28px; /* Even smaller icons */
+        height: 28px;
     }
     
     .side-menu .btn {
-        padding: 0.4rem 0.5rem; /* Much smaller button padding */
-        font-size: 0.75rem; /* Smaller button text */
-        margin-bottom: 0.25rem; /* Tighter button spacing */
+        padding: 0.3rem 0.4rem; /* Much smaller button padding */
+        font-size: 0.65rem; /* Even smaller button text */
+        margin-bottom: 0.15rem; /* Tighter button spacing */
     }
     
     .side-menu .user-details {
-        margin-bottom: 0.75rem; /* Much less spacing */
+        margin-bottom: 0.5rem; /* Minimal spacing */
     }
     
     .side-menu .nav-item {
-        margin-bottom: 0.1rem; /* Very tight spacing between items */
+        margin-bottom: 0.05rem; /* Extremely tight spacing between items */
     }
     
     .side-menu .user-avatar {
-        width: 35px !important; /* Smaller avatar */
-        height: 35px !important;
+        width: 30px !important; /* Even smaller avatar */
+        height: 30px !important;
     }
     
     .side-menu .side-menu-label {
-        font-size: 0.8rem; /* Smaller labels */
+        font-size: 0.72rem; /* Smaller labels */
+        line-height: 1.2; /* Tighter line height */
     }
     
     .side-menu-logo-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 35px; /* Much smaller logo */
-        height: 35px;
+        width: 30px; /* Even smaller logo */
+        height: 30px;
         border-radius: 50%;
         background: #fff;
-        border: 1px solid #55a8f9; /* Thinner border */
-        box-shadow: 0 1px 6px rgba(50,110,255,0.1);
+        border: 1px solid #55a8f9;
+        box-shadow: 0 1px 4px rgba(50,110,255,0.1);
         transition: box-shadow 0.25s, transform 0.25s;
         cursor: pointer;
         text-decoration: none;
         animation: cosplay-pulse 1.6s infinite alternate;
-        padding: 2px; /* Much smaller padding */
+        padding: 1px; /* Minimal padding */
     }
     
     .side-menu-logo-btn img {
@@ -71,17 +72,17 @@
     }
     
     @keyframes cosplay-pulse {
-        0% { transform: scale(1); box-shadow: 0 1px 6px rgba(50,110,255,0.1); }
-        50% { transform: scale(1.04); box-shadow: 0 2px 10px rgba(50,110,255,0.15); }
-        100% { transform: scale(1); box-shadow: 0 1px 6px rgba(50,110,255,0.1); }
+        0% { transform: scale(1); box-shadow: 0 1px 4px rgba(50,110,255,0.1); }
+        50% { transform: scale(1.03); box-shadow: 0 2px 8px rgba(50,110,255,0.15); }
+        100% { transform: scale(1); box-shadow: 0 1px 4px rgba(50,110,255,0.1); }
     }
     
     .side-menu-logo-btn:hover {
         border-color: #3483d6;
         background: #f4f9ff;
-        box-shadow: 0 2px 12px rgba(50,110,255,0.18);
+        box-shadow: 0 2px 10px rgba(50,110,255,0.18);
         animation-play-state: paused !important;
-        transform: scale(1.05);
+        transform: scale(1.04);
         text-decoration: none;
     }
     
@@ -94,10 +95,10 @@
     /* Mobile adjustments */
     @media (max-width: 767.98px) {
         .side-menu-logo-btn {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-width: 1px;
-            padding: 2px;
+            padding: 1px;
         }
     }
     
