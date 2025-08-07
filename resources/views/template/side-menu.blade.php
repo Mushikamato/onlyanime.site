@@ -1,55 +1,66 @@
 <div class="side-menu px-1 px-md-2 px-lg-3">
     
     {{-- NEW: Animated Logo Button at Top --}}
-    <div class="logo-button-container mb-1 d-flex justify-content-start pl-2">
+    <div class="logo-button-container mb-0 d-flex justify-content-start pl-2">
         <a href="#" id="side-menu-logo-btn" class="side-menu-logo-btn">
             <img src="{{ asset(getSetting('site.light_logo')) }}" alt="{{ __('Site logo') }}">
         </a>
     </div>
 
     <style>
-    /* Reduce all menu elements by ~5% for better fit */
+    /* Aggressive size reduction - ~20% smaller across the board */
     .side-menu {
-        font-size: 0.95rem; /* Slightly smaller text */
+        font-size: 0.8rem; /* Much smaller text */
     }
     
     .side-menu .nav-link {
-        padding: 0.35rem 0.35rem; /* Reduced from 0.4rem */
+        padding: 0.25rem 0.25rem; /* Much smaller padding */
+        margin-bottom: 0.1rem; /* Tighter spacing */
     }
     
     .side-menu .icon-wrapper {
-        width: 38px; /* Reduced from 40px */
-        height: 38px; /* Reduced from 40px */
+        width: 32px; /* Much smaller icons */
+        height: 32px;
     }
     
     .side-menu .btn {
-        padding: 0.65rem 0.75rem; /* Reduced button padding */
-        font-size: 0.9rem; /* Smaller button text */
+        padding: 0.4rem 0.5rem; /* Much smaller button padding */
+        font-size: 0.75rem; /* Smaller button text */
+        margin-bottom: 0.25rem; /* Tighter button spacing */
     }
     
     .side-menu .user-details {
-        margin-bottom: 1.5rem; /* Reduced spacing */
+        margin-bottom: 0.75rem; /* Much less spacing */
     }
     
     .side-menu .nav-item {
-        margin-bottom: 0.25rem; /* Tighter spacing between items */
+        margin-bottom: 0.1rem; /* Very tight spacing between items */
+    }
+    
+    .side-menu .user-avatar {
+        width: 35px !important; /* Smaller avatar */
+        height: 35px !important;
+    }
+    
+    .side-menu .side-menu-label {
+        font-size: 0.8rem; /* Smaller labels */
     }
     
     .side-menu-logo-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 45px; /* Reduced from 50px */
-        height: 45px; /* Reduced from 50px */
+        width: 35px; /* Much smaller logo */
+        height: 35px;
         border-radius: 50%;
         background: #fff;
-        border: 2px solid #55a8f9;
-        box-shadow: 0 2px 10px rgba(50,110,255,0.1);
+        border: 1px solid #55a8f9; /* Thinner border */
+        box-shadow: 0 1px 6px rgba(50,110,255,0.1);
         transition: box-shadow 0.25s, transform 0.25s;
         cursor: pointer;
         text-decoration: none;
         animation: cosplay-pulse 1.6s infinite alternate;
-        padding: 3px; /* Reduced padding */
+        padding: 2px; /* Much smaller padding */
     }
     
     .side-menu-logo-btn img {
@@ -60,17 +71,17 @@
     }
     
     @keyframes cosplay-pulse {
-        0% { transform: scale(1); box-shadow: 0 2px 10px rgba(50,110,255,0.1); }
-        50% { transform: scale(1.05); box-shadow: 0 4px 16px rgba(50,110,255,0.15); }
-        100% { transform: scale(1); box-shadow: 0 2px 10px rgba(50,110,255,0.1); }
+        0% { transform: scale(1); box-shadow: 0 1px 6px rgba(50,110,255,0.1); }
+        50% { transform: scale(1.04); box-shadow: 0 2px 10px rgba(50,110,255,0.15); }
+        100% { transform: scale(1); box-shadow: 0 1px 6px rgba(50,110,255,0.1); }
     }
     
     .side-menu-logo-btn:hover {
         border-color: #3483d6;
         background: #f4f9ff;
-        box-shadow: 0 4px 20px rgba(50,110,255,0.18);
+        box-shadow: 0 2px 12px rgba(50,110,255,0.18);
         animation-play-state: paused !important;
-        transform: scale(1.06);
+        transform: scale(1.05);
         text-decoration: none;
     }
     
@@ -83,10 +94,10 @@
     /* Mobile adjustments */
     @media (max-width: 767.98px) {
         .side-menu-logo-btn {
-            width: 42px;
-            height: 42px;
-            border-width: 2px;
-            padding: 3px;
+            width: 32px;
+            height: 32px;
+            border-width: 1px;
+            padding: 2px;
         }
     }
     
@@ -131,7 +142,7 @@
     });
     </script>
 
-    <div class="user-details mb-1 d-flex open-menu pointer-cursor flex-row-no-rtl">
+    <div class="user-details mb-0 d-flex open-menu pointer-cursor flex-row-no-rtl">
         <div class="ml-0 ml-md-2">
             @if(Auth::check())
                 <img src="{{Auth::user()->avatar}}" class="rounded-circle user-avatar">
