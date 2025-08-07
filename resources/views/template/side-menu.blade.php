@@ -154,8 +154,8 @@
                     <div class="d-flex justify-content-center align-items-center">
                         <div class="icon-wrapper d-flex justify-content-center align-items-center position-relative">
                             @include('elements.icon',['icon'=>'chatbubbles-outline','variant'=>'large'])
-                            <div class="menu-notification-badge notifications-menu-count {{(isset($messagesCountOverride) && $messagesCountOverride > 0) || (MessengerHelper::getUnreadMessagesCount() > 0) ? '' : 'd-none'}}">
-                                {{!isset($messagesCountOverride) ? MessengerHelper::getUnreadMessagesCount() : $messagesCountOverride}}
+                            <div class="menu-notification-badge notifications-menu-count {{(isset($messagesCountOverride) && $messagesCountOverride > 0) || (class_exists('MessengerHelper') && MessengerHelper::getUnreadMessagesCount() > 0) ? '' : 'd-none'}}">
+                                {{!isset($messagesCountOverride) ? (class_exists('MessengerHelper') ? MessengerHelper::getUnreadMessagesCount() : 0) : $messagesCountOverride}}
                             </div>
                         </div>
                         <span class="d-none d-md-block d-xl-block d-lg-block ml-2 text-truncate side-menu-label">{{__('Messages')}}</span>
