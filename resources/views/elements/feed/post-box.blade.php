@@ -3,7 +3,10 @@
     <div class="post-header pl-3 pr-3 ">
         <div class="d-flex">
             <div class="avatar-wrapper">
-                <img class="avatar rounded-circle" src="{{$post->user->avatar}}">
+                {{-- CLICKABLE AVATAR: Wraps avatar image in profile link --}}
+                <a href="{{route('profile',['username'=>$post->user->username])}}" style="text-decoration: none;">
+                    <img class="avatar rounded-circle" src="{{$post->user->avatar}}" style="cursor: pointer;">
+                </a>
             </div>
             <div class="post-details pl-2 w-100{{$post->is_pinned ? '' : '' }}">
                 <div class="d-flex justify-content-between">
@@ -184,20 +187,32 @@
     <div class="post-footer mt-3 pl-3 pr-3">
         <div class="footer-actions d-flex justify-content-between">
             <div class="d-flex">
-                {{-- TEST FIX: Make ALL like buttons clickable --}}
-                <div class="h-pill h-pill-primary mr-1 rounded react-button {{PostsHelper::didUserReact($post->reactions) ? 'active' : ''}}" data-toggle="tooltip" data-placement="top" title="{{__('Like')}}" onclick="Post.reactTo('post',{{$post->id}})">
-                    @if(PostsHelper::didUserReact($post->reactions))
-                        @include('elements.icon',['icon'=>'heart', 'variant' => 'medium', 'classes' =>"text-primary"])
-                    @else
-                        @include('elements.icon',['icon'=>'heart-outline', 'variant' => 'medium'])
-                    @endif
-                </div>
-
-                {{-- TEST FIX: Make ALL comment buttons clickable --}}
-                @if(Route::currentRouteName() != 'posts.get')
-                    <div class="h-pill h-pill-primary mr-1 rounded" data-toggle="tooltip" data-placement="top" title="{{__('Show comments')}}" onClick="Post.showPostComments({{$post->id}},6)">
-                        @include('elements.icon',['icon'=>'chatbubble-outline', 'variant' => 'medium'])
+                {{-- ORIGINAL LIKE BUTTON: Keep your current like button logic --}}
+                @if($post->isSubbed || (Auth::check() && getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile))
+                    <div class="h-pill h-pill-primary mr-1 rounded react-button {{PostsHelper::didUserReact($post->reactions) ? 'active' : ''}}" data-toggle="tooltip" data-placement="top" title="{{__('Like')}}" onclick="Post.reactTo('post',{{$post->id}})">
+                        @if(PostsHelper::didUserReact($post->reactions))
+                            @include('elements.icon',['icon'=>'heart', 'variant' => 'medium', 'classes' =>"text-primary"])
+                        @else
+                            @include('elements.icon',['icon'=>'heart-outline', 'variant' => 'medium'])
+                        @endif
                     </div>
+                @else
+                    <div class="h-pill h-pill-primary mr-1 rounded react-button disabled" data-toggle="tooltip" data-placement="top" title="{{__('Like')}}">
+                        @include('elements.icon',['icon'=>'heart-outline', 'variant' => 'medium'])
+                    </div>
+                @endif
+
+                {{-- ORIGINAL COMMENT BUTTON: Keep your current comment button logic --}}
+                @if(Route::currentRouteName() != 'posts.get')
+                    @if($post->isSubbed || (Auth::check() && getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile))
+                        <div class="h-pill h-pill-primary mr-1 rounded" data-toggle="tooltip" data-placement="top" title="{{__('Show comments')}}" onClick="Post.showPostComments({{$post->id}},6)">
+                            @include('elements.icon',['icon'=>'chatbubble-outline', 'variant' => 'medium'])
+                        </div>
+                    @else
+                        <div class="h-pill h-pill-primary mr-1 rounded disabled" data-toggle="tooltip" data-placement="top" title="{{__('Show comments')}}">
+                            @include('elements.icon',['icon'=>'chatbubble-outline', 'variant' => 'medium'])
+                        </div>
+                    @endif
                 @endif
 
                 {{-- Tips --}}
