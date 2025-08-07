@@ -1,27 +1,29 @@
-@extends('layouts.user-no-nav')
-
-@section('page_title', __('Home'))
+@extends('layouts.generic')
 
 @section('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css"/>
 <style>
-  .slot-container { min-height: 100vh; padding: 16px; background: linear-gradient(45deg, #f3f7ff 0%, #e3efff 100%); }
-  .slot-grid-container { display: flex; flex-wrap: nowrap; gap: 10px; min-height: 500px; justify-content: center; position: relative; }
-  .slot-post-box-wrapper { border-radius: 8px; overflow: hidden; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(85, 168, 249, 0.1); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
-  .slot-post-box-wrapper.swiper { height: 100%; }
-  .slot-post-box-wrapper .swiper-slide { border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
-  .slot-post-box-wrapper .swiper-slide img { width: 100%; border-radius: 6px; object-fit: cover; transition: transform 0.25s ease; }
-  .slot-post-box-wrapper .swiper-slide:hover img { transform: scale(1.05); }
-  .slot-post-box-wrapper.repeating-image-slot { background: linear-gradient(to bottom, #55a8f9, #3483d6); opacity: 0.6; border: none; }
+  .swiper-wrapper {
+    transition-timing-function: linear !important;
+  }
+  .slot-container { width: 100%; margin: 10px auto; position: relative; padding: 0 10px; height: calc(100% - 20px); display: flex; flex-direction: column; }
+  .slot-grid-container { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 10px; width: 100%; flex-grow: 1; overflow: hidden; min-height: 0; }
+  .slot-post-box-wrapper { height: 100%; display: none; flex-direction: column; align-items: stretch; justify-content: flex-start; overflow: hidden; transition: none !important; flex-grow: 1; flex-shrink: 1; box-sizing: border-box; }
+  .slot-post-box-wrapper .swiper-wrapper { display: flex; flex-direction: column; height: 100%; }
+  .slot-post-box-wrapper .swiper-slide { width: 100%; height: auto; min-height: 210px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; box-sizing: border-box; padding-bottom: 5px; }
+  .slot-post-box-wrapper .swiper-slide img { width: 100%; height: 190px; object-fit: cover; border-radius: 12px; }
+  .slot-post-box-wrapper.repeating-image-slot { flex-shrink: 0; flex-grow: 0; background-color: #1a1a1a; }
+  
+  /* --- CSS FIX FOR HOVER --- */
   .center-buttons-absolute {
     position: absolute;
-    top: 50%;
     left: 50%;
+    top: 50%;
+    z-index: 9;
     transform: translate(-50%, -50%);
-    z-index: 20;
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 24px;
+    gap: 500px;
     pointer-events: none;
   }
   .cosplay-btn {
@@ -37,7 +39,7 @@
     font-weight: bold;
     color: #3483d6;
     box-shadow: 0 4px 16px rgba(50,110,255,0.12);
-    transition: all 0.25s;
+    transition: box-shadow 0.25s;
     animation: cosplay-pulse 1.6s infinite alternate;
     cursor: pointer;
     text-decoration: none;
@@ -45,62 +47,13 @@
     user-select: none;
     pointer-events: auto;
   }
-  
-  /* Active state for selected category */
-  .cosplay-btn.active {
-    background: #3483d6;
-    color: #fff;
-    border-color: #fff;
-    transform: scale(1.1);
-  }
-  
-  @keyframes cosplay-pulse { 
-    0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} 
-    50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17);} 
-    100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} 
-  }
-  
-  .cosplay-btn:hover { 
-    color: #215ca8; 
-    background: #f4f9ff; 
-    box-shadow: 0 8px 32px rgba(50,110,255,0.22); 
-  }
-  
-  .cosplay-btn.active:hover {
-    background: #2d6bc4;
-    color: #fff;
-  }
-  
-  @media (min-width: 1101px) { 
-    .slot-post-box-wrapper { display: none; } 
-    .slot-post-box-wrapper:nth-child(-n+7) { display: flex; } 
-    .slot-post-box-wrapper.content-column { width: calc((100% - 15px - (6 * 10px)) / 6); min-width: 160px; max-width: 220px; } 
-    .slot-post-box-wrapper .swiper-slide img { height: 160px; } 
-    .slot-post-box-wrapper .swiper-slide { min-height: 175px; } 
-    .slot-post-box-wrapper.repeating-image-slot { width: 15px !important; min-width: 15px !important; max-width: 15px !important; border: none !important; } 
-  }
-  
-  @media (min-width: 768px) and (max-width: 1100px) { 
-    .slot-post-box-wrapper { display: none; } 
-    .slot-post-box-wrapper:nth-child(-n+5) { display: flex; } 
-    .slot-post-box-wrapper.content-column { width: calc((100% - 15px - (4 * 10px)) / 4); min-width: 140px; max-width: 180px; } 
-    .slot-post-box-wrapper .swiper-slide img { height: 160px; } 
-    .slot-post-box-wrapper .swiper-slide { min-height: 175px; } 
-    .slot-post-box-wrapper.repeating-image-slot { width: 15px !important; min-width: 15px !important; max-width: 15px !important; border: none !important; } 
-  }
-  
-  @media (max-width: 767px) { 
-    .slot-grid-container { min-height: 300px; } 
-    .slot-post-box-wrapper { display: none; } 
-    .slot-post-box-wrapper:nth-child(-n+3) { display: flex; } 
-    .slot-post-box-wrapper.content-column { width: calc((100% - 5px - (2 * 10px)) / 2); min-width: 100px; max-width: 150px; } 
-    .slot-post-box-wrapper .swiper-slide img { height: 120px; } 
-    .slot-post-box-wrapper .swiper-slide { min-height: 135px; } 
-    .center-buttons-absolute { flex-direction: column; gap: 16px; } 
-    .center-slider-btn { width: 100%; } 
-    .slot-post-box-wrapper.repeating-image-slot { width: 5px !important; min-width: 5px !important; max-width: 5px !important; border: none !important; } 
-  }
-  
+  /* --- END OF CSS FIX --- */
+
+  @keyframes cosplay-pulse { 0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} 50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17);} 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} }
+  .cosplay-btn:hover { color: #215ca8; background: #f4f9ff; box-shadow: 0 8px 32px rgba(50,110,255,0.22); }
+  @media (min-width: 1101px) { .slot-post-box-wrapper { display: none; } .slot-post-box-wrapper:nth-child(-n+7) { display: flex; } .slot-post-box-wrapper.content-column { width: calc((100% - 15px - (6 * 10px)) / 6); min-width: 160px; max-width: 220px; } .slot-post-box-wrapper.repeating-image-slot { width: 15px !important; min-width: 15px !important; max-width: 15px !important; border: none !important; } }
+  @media (min-width: 768px) and (max-width: 1100px) { .slot-post-box-wrapper { display: none; } .slot-post-box-wrapper:nth-child(-n+5) { display: flex; } .slot-post-box-wrapper.content-column { width: calc((100% - 15px - (4 * 10px)) / 4); min-width: 140px; max-width: 180px; } .slot-post-box-wrapper .swiper-slide img { height: 160px; } .slot-post-box-wrapper .swiper-slide { min-height: 175px; } .slot-post-box-wrapper.repeating-image-slot { width: 15px !important; min-width: 15px !important; max-width: 15px !important; border: none !important; } }
+  @media (max-width: 767px) { .slot-grid-container { min-height: 300px; } .slot-post-box-wrapper { display: none; } .slot-post-box-wrapper:nth-child(-n+3) { display: flex; } .slot-post-box-wrapper.content-column { width: calc((100% - 5px - (2 * 10px)) / 2); min-width: 100px; max-width: 150px; } .slot-post-box-wrapper .swiper-slide img { height: 120px; } .slot-post-box-wrapper .swiper-slide { min-height: 135px; } .center-buttons-absolute { flex-direction: column; gap: 16px; } .center-slider-btn { width: 100%; } .slot-post-box-wrapper.repeating-image-slot { width: 5px !important; min-width: 5px !important; max-width: 5px !important; border: none !important; } }
   .post-link { display: contents; text-decoration: none; color: inherit; }
 </style>
 @stop
@@ -108,8 +61,8 @@
 @section('content')
 <div class="slot-container" style="position:relative;">
   <div class="center-buttons-absolute">
-    <a href="#" class="cosplay-btn" data-category="cosplay">Cosplay</a>
-    <a href="#" class="cosplay-btn" data-category="anime">Anime</a>
+    <a href="{{ url('/login') }}" class="cosplay-btn">Cosplay</a>
+    <a href="{{ url('/login') }}" class="cosplay-btn">Anime</a>
   </div>
 
   <div class="slot-grid-container">
@@ -125,6 +78,8 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
 @php
+    // This block is now simplified. It trusts the controller to send only the posts
+    // that the user is allowed to see. The filtering is done in HomeController.php.
     $jsCosplayPosts = [];
     if (isset($cosplayPosts)) {
         foreach ($cosplayPosts as $post) {
@@ -163,10 +118,6 @@
     const IS_LOGGED_IN = @json(auth()->check());
 
     const allColumnElements = document.querySelectorAll('.slot-post-box-wrapper');
-    const categoryButtons = document.querySelectorAll('.cosplay-btn');
-    
-    // State for current selected category
-    let currentCategory = 'mixed'; // 'mixed', 'cosplay', 'anime'
 
     function createSlideHtml(item) {
         const postUrl = `/posts/${item.id}/${item.username}`;
@@ -213,17 +164,7 @@
             else {
                 el.classList.add('swiper', 'content-column');
                 el.innerHTML = '<div class="swiper-wrapper"></div>';
-                
-                // *** MODIFIED LOGIC - Choose data based on current category ***
-                let postData;
-                if (currentCategory === 'cosplay') {
-                    postData = cosplayData; // All columns use cosplay data
-                } else if (currentCategory === 'anime') {
-                    postData = animeData; // All columns use anime data
-                } else {
-                    // Mixed mode (original logic)
-                    postData = (index < dividerStartIndex) ? cosplayData : animeData;
-                }
+                const postData = (index < dividerStartIndex) ? cosplayData : animeData;
 
                 if (postData && postData.length > 0) {
                     let finalData = [...postData];
@@ -260,26 +201,6 @@
         });
     }
 
-    // *** NEW: Category button click handlers ***
-    categoryButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const selectedCategory = this.dataset.category;
-            
-            // Update current category
-            currentCategory = selectedCategory;
-            
-            // Update button visual states
-            categoryButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Rebuild layout with new category
-            setupLayout();
-        });
-    });
-
-    // Initial setup
     setupLayout();
     window.addEventListener('resize', setupLayout);
   });
