@@ -1,4 +1,4 @@
-<div class="side-menu px-1 px-md-2 px-lg-3">
+<div class="side-menu px-1 px-md-2 px-lg-3" style="height: 100vh; overflow-y: auto; padding-bottom: 20px;">
     
     {{-- NEW: Animated Logo Button at Top --}}
     <div class="logo-button-container mb-1 d-flex justify-content-start pl-2">
@@ -68,6 +68,20 @@
         .logo-button-container {
             display: none !important;
         }
+    }
+    
+    /* Full height menu container */
+    .side-menu {
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .user-side-menu {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     </style>
 
