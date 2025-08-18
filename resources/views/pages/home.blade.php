@@ -131,6 +131,20 @@
     // NEW: Add state for current selected category
     let currentCategory = 'mixed'; // 'mixed', 'cosplay', 'anime'
 
+    // ✅ QUICK OPTION B: Authentication Check for Non-Logged Users
+    function handleAuthRedirect(event, buttonType) {
+        if (!IS_LOGGED_IN) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Redirect to registration page immediately
+            window.location.href = '{{ route("register") }}';
+            return false;
+        }
+        // If logged in, continue with normal functionality
+        return true;
+    }
+
     function createSlideHtml(item) {
         const postUrl = `/posts/${item.id}/${item.username}`;
         const loginUrl = '{{ url('/login') }}';
@@ -225,9 +239,14 @@
         });
     }
 
-    // NEW: Add click handlers to category buttons
+    // ✅ ENHANCED: Add click handlers with authentication check
     categoryButtons.forEach(button => {
         button.addEventListener('click', function(e) {
+            // ✅ QUICK OPTION B: Check authentication first
+            if (!handleAuthRedirect(e, this.dataset.category)) {
+                return; // User was redirected, stop execution
+            }
+            
             e.preventDefault();
             
             // Get category from data attribute
