@@ -108,7 +108,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav text-center w-100">
                 @if(Auth::check())
                     @if(!getSetting('site.hide_create_post_menu'))
                         <li class="nav-item">
@@ -121,7 +121,7 @@
                 @endif
             </ul>
 
-            <ul class="navbar-nav ml-auto align-items-center">
+            <ul class="navbar-nav ml-auto align-items-center text-center">
                 @guest
                     @if(Route::currentRouteName() !== 'profile')
                         <!-- NEW: Language Dropdown for Guests -->
