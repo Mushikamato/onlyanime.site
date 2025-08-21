@@ -135,7 +135,13 @@
                                 @foreach(LocalesHelper::getAvailableLanguages() as $languageCode)
                                     @if(LocalesHelper::getLanguageName($languageCode))
                                         <a class="dropdown-item" href="{{route('language',['locale' => $languageCode])}}" rel="nofollow">
-                                            {{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}
+                                            @if($languageCode == 'en')
+                                                🇬🇧 English
+                                            @elseif($languageCode == 'ro') 
+                                                🇷🇴 Romanian
+                                            @else
+                                                {{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}
+                                            @endif
                                         </a>
                                     @endif
                                 @endforeach
@@ -163,7 +169,13 @@
                             @foreach(LocalesHelper::getAvailableLanguages() as $languageCode)
                                 @if(LocalesHelper::getLanguageName($languageCode))
                                     <a class="dropdown-item" href="{{route('language',['locale' => $languageCode])}}" rel="nofollow">
-                                        {{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}
+                                        @if($languageCode == 'en')
+                                            🇬🇧 English
+                                        @elseif($languageCode == 'ro') 
+                                            🇷🇴 Romanian
+                                        @else
+                                            {{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}
+                                        @endif
                                     </a>
                                 @endif
                             @endforeach
