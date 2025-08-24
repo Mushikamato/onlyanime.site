@@ -14,39 +14,85 @@
   .slot-post-box-wrapper .swiper-slide img { width: 100%; height: 190px; object-fit: cover; border-radius: 12px; }
   .slot-post-box-wrapper.repeating-image-slot { flex-shrink: 0; flex-grow: 0; background-color: #1a1a1a; }
   
-  /* --- CSS FIX FOR HOVER --- */
+/* --- КНОПКИ COSPLAY/ANIME: центр в своих 50% --- */
+.center-buttons-absolute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+
+  display: grid;
+  grid-template-columns: 50% 50%; /* две половины */
+  align-items: center;
+  justify-items: center;
+
+  width: 100%;
+  max-width: 100%; /* чтобы всегда растягивалось на всю ширину экрана */
+  pointer-events: none; /* клики проходят сквозь контейнер */
+}
+
+/* сами кнопки кликабельны */
+.center-buttons-absolute .cosplay-btn {
+  pointer-events: auto;
+}
+
+/* Базовый стиль кнопки */
+.cosplay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid #55a8f9;
+  font-size: 1.45rem;
+  font-weight: bold;
+  color: #3483d6;
+  box-shadow: 0 4px 16px rgba(50,110,255,0.12);
+  transition: box-shadow 0.25s, transform 0.25s;
+  animation: cosplay-pulse 1.6s infinite alternate;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0;
+  user-select: none;
+}
+
+/* Активная — заливка, без пульсации */
+.cosplay-btn.active {
+  background: #3483d6 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  transform: scale(1.05);
+  animation: none !important;
+}
+
+/* Пульсация */
+@keyframes cosplay-pulse {
+  0%   { transform: scale(1);   box-shadow: 0 4px 16px rgba(50,110,255,0.12); }
+  50%  { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17); }
+  100% { transform: scale(1);   box-shadow: 0 4px 16px rgba(50,110,255,0.12); }
+}
+
+/* Ховер */
+.cosplay-btn:hover {
+  color: #215ca8;
+  background: #f4f9ff;
+  box-shadow: 0 8px 32px rgba(50,110,255,0.22);
+}
+
+/* ====== Мобильная адаптация ====== */
+@media (max-width: 767px) {
   .center-buttons-absolute {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    z-index: 9;
-    transform: translate(-50%, -50%);
-    display: flex;
-    justify-content: center;
-    gap: 500px;
-    pointer-events: none;
+    grid-template-columns: 1fr; /* одна колонка */
+    row-gap: 16px;
   }
   .cosplay-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: #fff;
-    border: 4px solid #55a8f9;
-    font-size: 1.45rem;
-    font-weight: bold;
-    color: #3483d6;
-    box-shadow: 0 4px 16px rgba(50,110,255,0.12);
-    transition: box-shadow 0.25s;
-    animation: cosplay-pulse 1.6s infinite alternate;
-    cursor: pointer;
-    text-decoration: none;
-    margin: 0 12px;
-    user-select: none;
-    pointer-events: auto;
+    width: 100px;
+    height: 100px;
   }
+}
   
   /* NEW: Active button styling */
   .cosplay-btn.active {
@@ -55,13 +101,10 @@
     border-color: #fff !important;
     transform: scale(1.05);
   }
-  /* --- END OF CSS FIX --- */
 
-  @keyframes cosplay-pulse { 0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} 50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17);} 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);} }
-  .cosplay-btn:hover { color: #215ca8; background: #f4f9ff; box-shadow: 0 8px 32px rgba(50,110,255,0.22); }
   @media (min-width: 1101px) { .slot-post-box-wrapper { display: none; } .slot-post-box-wrapper:nth-child(-n+7) { display: flex; } .slot-post-box-wrapper.content-column { width: calc((100% - 15px - (6 * 10px)) / 6); min-width: 160px; max-width: 220px; } .slot-post-box-wrapper.repeating-image-slot { width: 15px !important; min-width: 15px !important; max-width: 15px !important; border: none !important; } }
   @media (min-width: 768px) and (max-width: 1100px) { .slot-post-box-wrapper { display: none; } .slot-post-box-wrapper:nth-child(-n+5) { display: flex; } .slot-post-box-wrapper.content-column { width: calc((100% - 15px - (4 * 10px)) / 4); min-width: 140px; max-width: 180px; } .slot-post-box-wrapper .swiper-slide img { height: 160px; } .slot-post-box-wrapper .swiper-slide { min-height: 175px; } .slot-post-box-wrapper.repeating-image-slot { width: 15px !important; min-width: 15px !important; max-width: 15px !important; border: none !important; } }
-  @media (max-width: 767px) { .slot-grid-container { min-height: 300px; } .slot-post-box-wrapper { display: none; } .slot-post-box-wrapper:nth-child(-n+3) { display: flex; } .slot-post-box-wrapper.content-column { width: calc((100% - 5px - (2 * 10px)) / 2); min-width: 100px; max-width: 150px; } .slot-post-box-wrapper .swiper-slide img { height: 120px; } .slot-post-box-wrapper .swiper-slide { min-height: 135px; } .center-buttons-absolute { flex-direction: column; gap: 16px; } .center-slider-btn { width: 100%; } .slot-post-box-wrapper.repeating-image-slot { width: 5px !important; min-width: 5px !important; max-width: 5px !important; border: none !important; } }
+  @media (max-width: 767px) { .slot-grid-container { min-height: 300px; } .slot-post-box-wrapper { display: none; } .slot-post-box-wrapper:nth-child(-n+3) { display: flex; } .slot-post-box-wrapper.content-column { width: calc((100% - 5px - (2 * 10px)) / 2); min-width: 100px; max-width: 150px; } .slot-post-box-wrapper .swiper-slide img { height: 120px; } .slot-post-box-wrapper .swiper-slide { min-height: 135px; } .center-slider-btn { width: 100%; } .slot-post-box-wrapper.repeating-image-slot { width: 5px !important; min-width: 5px !important; max-width: 5px !important; border: none !important; } }
   .post-link { display: contents; text-decoration: none; color: inherit; }
 </style>
 @stop

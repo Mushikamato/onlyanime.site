@@ -34,50 +34,61 @@
       pointer-events: auto;
       animation: cosplay-pulse 1.6s infinite alternate;
     }
-    .logo-style-18-btn.active-nsfw {
-        background-color: #3483d6;
-        color: #fff;
-        border-color: #fff;
-    }
+    .logo-style-18-btn.active-nsfw { background-color:#3483d6; color:#fff; border-color:#fff; }
     @keyframes cosplay-pulse {
       0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);}
       50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17);}
       100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);}
     }
     .logo-style-18-btn:hover, .logo-style-18-btn:focus-visible {
-      border-color: #3483d6;
-      background: #55a8f9;
-      color: #fff;
-      transform: scale(1.11);
-      box-shadow: 0 8px 28px 4px rgba(85,168,249,0.16);
+      border-color:#3483d6; background:#55a8f9; color:#fff; transform:scale(1.11);
+      box-shadow:0 8px 28px 4px rgba(85,168,249,0.16);
       animation-play-state: paused !important;
     }
-    .logo-style-18-btn:active {
-      filter: brightness(0.96);
-      transform: scale(0.97);
-      animation-play-state: paused !important;
-    }
-    .logo-style-18-btn .icon-18 {
-      font-size: 1.36em;
-      margin-right: 7px;
-      line-height: 1;
-    }
+    .logo-style-18-btn:active { filter:brightness(0.96); transform:scale(0.97); animation-play-state: paused !important; }
+    .logo-style-18-btn .icon-18 { font-size:1.36em; margin-right:7px; line-height:1; }
     @media (max-width: 767.98px) {
-      .header-center-btn { height: 56px; align-items: flex-end;}
-      .logo-style-18-btn {
-        min-width: 64px;
-        height: 36px;
-        font-size: 1em;
-        padding: 0 12px;
-        border-radius: 11px;
-        margin-left: 100px;
-      }
-      .logo-style-18-btn .icon-18 {
-        font-size: 1em;
-        margin-right: 2px;
-      }
+      .header-center-btn { height:56px; align-items:flex-end; }
+      .logo-style-18-btn { min-width:64px; height:36px; font-size:1em; padding:0 12px; border-radius:11px; margin-left:100px; }
+      .logo-style-18-btn .icon-18 { font-size:1em; margin-right:2px; }
+    }
+
+    /* ===== Glass dropdown for Language (light & dark aware) ===== */
+    .lang-dropdown{
+      background: rgba(255,255,255,0.72) !important;
+      backdrop-filter: blur(12px) saturate(160%) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+      overflow: hidden;
+      padding: 8px 0;
+      min-width: 200px;
+    }
+    .lang-dropdown .dropdown-item{
+      color:#1b1f28;
+      font-weight:600;
+      padding:10px 16px;
+      transition: background .25s, color .25s;
+    }
+    .lang-dropdown .dropdown-item:hover{
+      background: rgba(85,168,249,0.15);
+      color:#3483d6;
+    }
+    /* dark theme overrides */
+    .navbar-dark .lang-dropdown{
+      background: rgba(20,22,30,0.55) !important;
+      border-color: rgba(255,255,255,0.12);
+    }
+    .navbar-dark .lang-dropdown .dropdown-item{
+      color:#ecf3ff;
+    }
+    .navbar-dark .lang-dropdown .dropdown-item:hover{
+      background: rgba(85,168,249,0.22);
+      color:#ffffff;
     }
     </style>
+
     <div class="container-fluid position-relative">
 
         <!-- ВСЕГДА СВЕТЛОЕ ЛОГО -->
@@ -88,7 +99,7 @@
         </a>
 
         <div class="header-center-btn">
-             @if(Auth::check())
+            @if(Auth::check())
                 <a href="#" id="header-toggle-adult-content"
                    class="logo-style-18-btn {{ Auth::user()->show_adult_content ? 'active-nsfw' : '' }}"
                    data-is-nsfw-on="{{ Auth::user()->show_adult_content ? 'true' : 'false' }}">
@@ -108,39 +119,34 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav text-center w-100">
-                @if(Auth::check())
-                    @if(!getSetting('site.hide_create_post_menu'))
-                        <li class="nav-item">
-                            <a class="nav-link ml-0 ml-md-2 py-1" href="{{ route('posts.create') }}">{{ __('Create') }}</a>
-                        </li>
-                    @endif
-                    <li class="nav-item">
-                        <a class="nav-link ml-0 ml-md-2 py-1" href="{{ route('feed') }}">{{ __('Feed') }}</a>
-                    </li>
-                @endif
-            </ul>
+            <!-- ЛЕВАЯ СТОРОНА — Create и Feed убраны -->
+            <ul class="navbar-nav text-center w-100"></ul>
 
             <ul class="navbar-nav ml-auto align-items-center text-center">
                 @guest
                     @if(Route::currentRouteName() !== 'profile')
-                        <!-- NEW: Language Dropdown for Guests -->
                         @if(getSetting('site.allow_language_switch'))
                         <li class="nav-item dropdown">
-                            <a class="nav-link py-1 dropdown-toggle d-flex align-items-center" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link py-1 dropdown-toggle d-flex align-items-center"
+                               href="#"
+                               id="navbarDropdownLanguageGuest"
+                               role="button"
+                               data-toggle="dropdown"
+                               aria-haspopup="true"
+                               aria-expanded="false">
                                 <img src="{{ asset('img/language.png') }}" alt="Language" style="width: 20px; height: 20px; margin-right: 6px;">
                                 {{ __("Language") }}
                             </a>
-                            <div class="dropdown-menu dropdown-menu-right">
+                            <div class="dropdown-menu lang-dropdown dropdown-menu-right" aria-labelledby="navbarDropdownLanguageGuest">
                                 @foreach(LocalesHelper::getAvailableLanguages() as $languageCode)
                                     @if(LocalesHelper::getLanguageName($languageCode))
                                         <a class="dropdown-item" href="{{route('language',['locale' => $languageCode])}}" rel="nofollow">
                                             @if($languageCode == 'en')
                                                 🇬🇧 English
-                                            @elseif($languageCode == 'ro') 
+                                            @elseif($languageCode == 'ro')
                                                 🇷🇴 Romanian
                                             @else
-                                                {{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}
+                                                {{ ucfirst(__(LocalesHelper::getLanguageName($languageCode))) }}
                                             @endif
                                         </a>
                                     @endif
@@ -158,23 +164,28 @@
                         @endif
                     @endif
                 @else
-                    <!-- Language Dropdown for Logged In Users -->
                     @if(getSetting('site.allow_language_switch'))
                     <li class="nav-item dropdown">
-                        <a class="nav-link py-1 dropdown-toggle d-flex align-items-center" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link py-1 dropdown-toggle d-flex align-items-center"
+                           href="#"
+                           id="navbarDropdownLanguageUser"
+                           role="button"
+                           data-toggle="dropdown"
+                           aria-haspopup="true"
+                           aria-expanded="false">
                             <img src="{{ asset('img/language.png') }}" alt="Language" style="width: 20px; height: 20px; margin-right: 6px;">
                             {{ __("Language") }}
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-menu lang-dropdown dropdown-menu-right" aria-labelledby="navbarDropdownLanguageUser">
                             @foreach(LocalesHelper::getAvailableLanguages() as $languageCode)
                                 @if(LocalesHelper::getLanguageName($languageCode))
                                     <a class="dropdown-item" href="{{route('language',['locale' => $languageCode])}}" rel="nofollow">
                                         @if($languageCode == 'en')
                                             🇬🇧 English
-                                        @elseif($languageCode == 'ro') 
+                                        @elseif($languageCode == 'ro')
                                             🇷🇴 Romanian
                                         @else
-                                            {{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}
+                                            {{ ucfirst(__(LocalesHelper::getLanguageName($languageCode))) }}
                                         @endif
                                     </a>
                                 @endif
@@ -192,6 +203,11 @@
                             <a class="dropdown-item" href="{{route('feed')}}">
                                 {{__('Feed')}}
                             </a>
+                            @if(!getSetting('site.hide_create_post_menu'))
+                                <a class="dropdown-item" href="{{ route('posts.create') }}">
+                                    {{ __('Create') }}
+                                </a>
+                            @endif
                             <a class="dropdown-item" href="{{route('my.messenger.get')}}">
                                 {{__('Messenger')}}
                             </a>
@@ -218,7 +234,7 @@
     </div>
 </nav>
 
-{{-- 18+ Button Script - COMPLETELY UNTOUCHED --}}
+{{-- 18+ Button Script - COMPLEТELY UNTOUCHED --}}
 @if(Auth::check())
 @push('scripts')
 <script>
@@ -231,7 +247,7 @@
             var newState = !isNsfwOn;
 
             button.css('pointer-events', 'none');
-            
+
             $.ajax({
                 type: 'POST',
                 url: '{{ route('my.settings.flags.save') }}',
