@@ -1,3 +1,6 @@
+<style>
+.tip-message-input { display: block !important; }
+</style>
 <div class="row checkout-dialog">
     <div class="col-lg-6 mx-auto">
         {{-- Paypal and stripe actual buttons --}}
@@ -59,9 +62,16 @@
                                 @include('elements.icon',['icon'=>'cash-outline','variant'=>'medium','centered'=>false])
                             </span>
                                 </div>
+                                
                                 <input class="form-control uifield-amount" placeholder="{{__(\App\Providers\SettingsServiceProvider::leftAlignedCurrencyPosition() ? 'Amount ($5 min, $500 max)' : 'Amount (5$ min, 500$ max)',['min'=>getSetting('payments.min_tip_value'),'max'=>getSetting('payments.max_tip_value'),'currency'=>config('app.site.currency_symbol')])}}" aria-label="Username" aria-describedby="amount-label" id="checkout-amount" type="number" min="0" step="1" max="500" >
                                 <div class="invalid-feedback">{{__('Please enter a valid amount.')}}</div>
                             </div>
+                            {{-- TIP MESSAGE FIELD - MINIMAL ADDITION --}}
+<div class="form-group mb-3 tip-message-input" style="display: none;">
+    <label for="tip-message">{{__('Message (optional)')}}</label>
+    <textarea class="form-control" id="tip-message" name="tip_message" rows="3" placeholder="{{__('Leave a message with your tip...')}}" maxlength="500"></textarea>
+    <small class="text-muted">{{__('This message will be sent privately to the creator')}}</small>
+</div>
                         </div>
 
                         <div id="accordion" class="mb-3">
@@ -254,4 +264,17 @@
             </div>
         </div>
     </div>
+    <script>
+// Show message field only for tips
+$('#checkout-center').on('show.bs.modal', function (e) {
+    var button = $(e.relatedTarget);
+    var type = button.data('type');
+    
+    if (type === 'tip' || type === 'chat-tip') {
+        $('.tip-message-input').show();
+    } else {
+        $('.tip-message-input').hide();
+    }
+});
+</script>
 </div>
