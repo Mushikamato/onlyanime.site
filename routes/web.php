@@ -174,6 +174,7 @@ Route::group(['middleware' => ['auth', 'verified', '2fa']], function () {
     // Posts routes
     Route::group(['prefix' => 'posts', 'as' => 'posts.'], function () {
         Route::post('/save', ['uses' => 'PostsController@savePost', 'as'   => 'save']);
+        Route::post('/quick-save', ['uses' => 'PostsController@quickSavePost', 'as' => 'quick-save']);
         Route::get('/create', ['uses' => 'PostsController@create', 'as'   => 'create']);
         Route::get('/edit/{post_id}', ['uses' => 'PostsController@edit', 'as'   => 'edit']);
         Route::get('/{post_id}/{username}', ['uses' => 'PostsController@getPost', 'as'   => 'get']);

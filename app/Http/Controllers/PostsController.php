@@ -187,10 +187,9 @@ class PostsController extends Controller
             $expireDate = $request->get('postExpireDate') ? Carbon::parse($request->get('postExpireDate')) : null;
             $pollAnswers = $request->get('pollAnswers');
 
-            // --- ADDED THIS ---
+            // Enhanced content type and adult content handling
             $contentType = $request->get('content_type');
             $isAdultContent = $request->get('is_adult_content', 0);
-            // ------------------
 
             if ($type == 'create') {
                 if ($releaseDate->isPast()) {
@@ -204,8 +203,8 @@ class PostsController extends Controller
                     'status' => $postStatus,
                     'release_date' => $releaseDate->toDateTimeString(),
                     'expire_date' => $expireDate?->toDateTimeString(),
-                    'content_type' => $contentType, // ADDED
-                    'is_adult_content' => $isAdultContent, // ADDED
+                    'content_type' => $contentType,
+                    'is_adult_content' => $isAdultContent,
                 ]);
                 $postID = $post->id;
 
@@ -227,8 +226,8 @@ class PostsController extends Controller
                         'price' => $request->get('price'),
                         'release_date' => $releaseDate->toDateTimeString(),
                         'expire_date' => $expireDate?->toDateTimeString(),
-                        'content_type' => $contentType, // ADDED
-                        'is_adult_content' => $isAdultContent, // ADDED
+                        'content_type' => $contentType,
+                        'is_adult_content' => $isAdultContent,
                     ]);
                     $postID = $post->id;
 
@@ -286,6 +285,50 @@ class PostsController extends Controller
         }
     }
 
+    /**
+     * NEW: Quick save post method for AJAX composer
+     * Uses the same logic as savePost but with optimized response
+     *
+     * @param SavePostRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function quickSavePost(SavePostRequest $request)
+    {
+        try {
+            // Use existing savePost logic
+            $result = $this->savePost($request);
+            
+            // If savePost was successful, enhance the response for quick composer
+            if ($result->getStatusCode() === 200) {
+                $responseData = json_decode($result->getContent(), true);
+                
+                if (isset($responseData['success']) && $responseData['success']) {
+                    // Add additional data for quick composer
+                    return response()->json([
+                        'success' => true,
+                        'message' => $responseData['message'] ?? __('Post created successfully.'),
+                        'data' => [
+                            'refresh_feed' => true,
+                            'show_notification' => true
+                        ]
+                    ]);
+                }
+            }
+            
+            // Return the original response if not successful
+            return $result;
+            
+        } catch (\Exception $exception) {
+            return response()->json([
+                'success' => false, 
+                'message' => __('Failed to create post. Please try again.'),
+                'errors' => [$exception->getMessage()]
+            ], 500);
+        }
+    }
+
+    // ... (rest of your existing methods remain exactly the same)
+    
     public function getPostComments(Request $request)
     {
         try {

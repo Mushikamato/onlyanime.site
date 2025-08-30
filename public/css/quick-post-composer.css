@@ -1,0 +1,313 @@
+/* Quick Post Composer Styles */
+.quick-post-composer-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.quick-post-composer {
+    border: 1px solid var(--border-color, #e1e8ed);
+    border-radius: 12px;
+    background: var(--surface-color, #ffffff);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.quick-post-composer:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Collapsed State */
+.composer-collapsed {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.composer-collapsed:hover {
+    background-color: var(--hover-bg-color, #f7f9fa);
+}
+
+.composer-avatar img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.composer-placeholder {
+    color: var(--text-muted, #657786);
+    font-size: 1.1rem;
+}
+
+/* Expanded State */
+.composer-expanded {
+    animation: expandComposer 0.3s ease-out;
+}
+
+@keyframes expandComposer {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.composer-header {
+    background: var(--header-bg, #f8f9fa);
+    border-radius: 12px 12px 0 0;
+}
+
+.composer-textarea {
+    resize: vertical;
+    min-height: 80px;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 1.1rem;
+    line-height: 1.4;
+}
+
+.composer-textarea:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Media Preview */
+.media-preview-area {
+    border: 1px solid var(--border-color, #e1e8ed);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--light-bg, #f8f9fa);
+}
+
+.media-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.media-preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.media-preview-item img,
+.media-preview-item video {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.remove-media {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* Action Buttons */
+.composer-actions {
+    background: var(--actions-bg, #ffffff);
+    border-radius: 0 0 12px 12px;
+}
+
+.action-buttons {
+    gap: 0.5rem;
+}
+
+.action-btn .btn {
+    min-width: 40px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.action-btn .btn:hover {
+    background-color: var(--primary-light, rgba(29, 161, 242, 0.1));
+    transform: scale(1.05);
+}
+
+.action-btn ion-icon {
+    font-size: 20px;
+}
+
+/* Submit Button */
+#quickPostSubmitBtn {
+    min-width: 80px;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+#quickPostSubmitBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Character Counter */
+.character-counter {
+    margin-top: 0.5rem;
+}
+
+.character-counter.text-warning {
+    color: #f39c12 !important;
+}
+
+.character-counter.text-danger {
+    color: #e74c3c !important;
+}
+
+/* Price and Poll Displays */
+.price-display,
+.poll-display {
+    margin-top: 0.75rem;
+}
+
+.price-display .alert,
+.poll-display .alert {
+    margin-bottom: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+}
+
+/* Notification Styles */
+.quick-post-notification {
+    position: relative;
+    z-index: 1050;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .quick-post-composer-wrapper {
+        padding: 0 0.75rem;
+    }
+    
+    .composer-content,
+    .composer-actions {
+        padding: 1rem !important;
+    }
+    
+    .media-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .media-preview-item img,
+    .media-preview-item video {
+        height: 100px;
+    }
+    
+    .action-buttons {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .action-btn .btn {
+        min-width: 36px;
+        min-height: 36px;
+    }
+    
+    .action-btn ion-icon {
+        font-size: 18px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .quick-post-composer {
+        background: var(--dark-surface, #1a1a1a);
+        border-color: var(--dark-border, #333333);
+        color: var(--dark-text, #ffffff);
+    }
+    
+    .composer-header {
+        background: var(--dark-header-bg, #2a2a2a);
+    }
+    
+    .composer-collapsed:hover {
+        background-color: var(--dark-hover-bg, #2a2a2a);
+    }
+    
+    .composer-textarea {
+        color: var(--dark-text, #ffffff);
+        background: transparent;
+    }
+    
+    .composer-textarea::placeholder {
+        color: var(--dark-text-muted, #8899a6);
+    }
+    
+    .media-preview-area {
+        background: var(--dark-light-bg, #2a2a2a);
+        border-color: var(--dark-border, #333333);
+    }
+}
+
+/* Integration with existing feed styles */
+.feed-box .quick-post-composer-wrapper {
+    margin-bottom: 2rem;
+}
+
+/* Ensure proper spacing in feed layout */
+.posts-wrapper {
+    margin-top: 1rem;
+}
+
+/* File input styling */
+#quickPostFiles {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Loading state */
+.quick-post-composer.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.quick-post-composer.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border: 2px solid var(--primary-color, #1da1f2);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
