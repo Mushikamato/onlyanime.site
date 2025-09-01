@@ -122,6 +122,18 @@ Route::group(['middleware' => ['auth', 'verified', '2fa']], function () {
             Route::post('/lists/manage/follows', ['uses' => 'ListsController@manageUserFollows', 'as'   => 'manage.follows']);
         });
 
+        /*
+         * (My) Collections - NEW UNIFIED SYSTEM
+         */
+        Route::group(['prefix' => '', 'as' => 'collections.'], function () {
+            // Main collections page
+            Route::get('/collections', ['uses' => 'CollectionsController@index', 'as' => 'index']);
+            
+            // AJAX endpoints for collections
+            Route::get('/collections/bookmarks', ['uses' => 'CollectionsController@getBookmarks', 'as' => 'bookmarks']);
+            Route::get('/collections/search', ['uses' => 'CollectionsController@search', 'as' => 'search']);
+        });
+
         // (My) Streams routes
         Route::group(['prefix' => 'streams', 'as' => 'streams.'], function () {
             Route::get('', ['uses' => 'StreamsController@index', 'as'   => 'get']);
