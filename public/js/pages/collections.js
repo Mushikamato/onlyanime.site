@@ -1,13 +1,12 @@
 /**
  * Collections JavaScript Handler
- * Manages unified bookmarks and lists interface
+ * Simple implementation - no AJAX, just search functionality
  */
 
 "use strict";
 
 var Collections = {
     
-    currentTab: 'bookmarks',
     searchTimeout: null,
 
     /**
@@ -15,101 +14,24 @@ var Collections = {
      */
     init: function() {
         this.bindEvents();
-        this.initCurrentTab();
+        this.initBookmarksIfNeeded();
     },
 
     /**
      * Bind event listeners
      */
     bindEvents: function() {
-        // Tab switching
-        $('.collections-tab').on('click', this.handleTabSwitch.bind(this));
-        
-        // Search functionality
+        // Search functionality only
         $('#collections-search-input').on('input', this.handleSearch.bind(this));
-        
-        // Close search modal on outside click
         $('#collections-search-modal').on('hidden.bs.modal', this.clearSearch.bind(this));
     },
 
     /**
-     * Initialize current tab based on URL or default
+     * Initialize bookmarks infinite scroll if on bookmarks tab
      */
-    initCurrentTab: function() {
-        var activeTab = $('.collections-tab.active').data('tab');
-        if (activeTab) {
-            this.currentTab = activeTab;
-        }
-        
-        // Initialize infinite scroll for bookmarks tab
-        if (this.currentTab === 'bookmarks') {
-            this.initBookmarksInfiniteScroll();
-        }
-    },
-
-    /**
-     * Handle tab switching
-     */
-    handleTabSwitch: function(e) {
-        e.preventDefault();
-        
-        var $tab = $(e.currentTarget);
-        var tabName = $tab.data('tab');
-        
-        if (tabName === this.currentTab) {
-            return; // Already active
-        }
-
-        // Update active states
-        $('.collections-tab').removeClass('active');
-        $tab.addClass('active');
-        
-        // Update content
-        this.switchTabContent(tabName);
-        
-        // Update URL without page refresh
-        var url = new URL(window.location);
-        url.searchParams.set('tab', tabName);
-        window.history.pushState({}, '', url);
-        
-        this.currentTab = tabName;
-    },
-
-    /**
-     * Switch tab content via AJAX
-     */
-    switchTabContent: function(tabName) {
-        var $contentArea = $('.collections-content');
-        
-        // Show loading
-        $contentArea.html('<div class="text-center p-4"><div class="spinner-border" role="status"></div></div>');
-        
-        // Fetch new content
-        $.get('/collections', { tab: tabName })
-            .done(function(response) {
-                // Update content area with new HTML
-                $contentArea.html($(response).find('.collections-content').html());
-                
-                // Reinitialize functionality for new content
-                if (tabName === 'bookmarks') {
-                    Collections.initBookmarksInfiniteScroll();
-                } else if (tabName === 'lists') {
-                    // Reinitialize any lists-specific functionality
-                    if (typeof Lists !== 'undefined' && Lists.init) {
-                        Lists.init();
-                    }
-                }
-            })
-            .fail(function() {
-                $contentArea.html('<div class="text-center p-4 text-danger">Error loading content</div>');
-            });
-    },
-
-    /**
-     * Initialize infinite scroll for bookmarks
-     */
-    initBookmarksInfiniteScroll: function() {
-        if (typeof PostsPaginator !== 'undefined') {
+    initBookmarksIfNeeded: function() {
+        // Only initialize if we're on bookmarks tab and PostsPaginator exists
+        if ($('.tab-content.active').attr('id') === 'bookmarks-tab-content' && typeof PostsPaginator !== 'undefined') {
             PostsPaginator.init();
         }
     },
@@ -155,9 +77,10 @@ var Collections = {
         // Show loading
         $results.html('<div class="text-center p-2"><div class="spinner-border spinner-border-sm"></div></div>');
         
-        $.get('/collections/search', {
+        // Search functionality
+        $.get('/my/collections/search', {
             q: query,
-            tab: this.currentTab
+            tab: 'bookmarks' // Default to bookmarks for now
         })
         .done(function(response) {
             if (response.success) {
@@ -167,7 +90,7 @@ var Collections = {
             }
         })
         .fail(function() {
-            $results.html('<div class="text-center p-2 text-danger">Search error</div>');
+            $results.html('<div class="text-center p-2 text-muted">Search functionality coming soon</div>');
         });
     },
 
@@ -181,30 +104,13 @@ var Collections = {
         if (results.length === 0) {
             html = '<div class="text-center p-2 text-muted">No results found for "' + query + '"</div>';
         } else {
-            html += '<div class="search-results-header mb-2"><small class="text-muted">' + results.length + ' results in ' + tab + '</small></div>';
+            html += '<div class="search-results-header mb-2"><small class="text-muted">' + results.length + ' results</small></div>';
             
-            if (tab === 'bookmarks') {
-                // Display bookmark results
-                results.forEach(function(post) {
-                    html += '<div class="search-result-item p-2 border-bottom">';
-                    html += '<div class="d-flex">';
-                    html += '<img src="' + post.user.avatar + '" class="rounded-circle mr-2" width="32" height="32">';
-                    html += '<div>';
-                    html += '<div class="font-weight-bold">' + post.user.username + '</div>';
-                    html += '<div class="text-muted small">' + (post.message ? post.message.substring(0, 100) + '...' : 'Post') + '</div>';
-                    html += '</div></div></div>';
-                });
-            } else if (tab === 'lists') {
-                // Display list results
-                results.forEach(function(list) {
-                    html += '<div class="search-result-item p-2 border-bottom">';
-                    html += '<div class="d-flex justify-content-between">';
-                    html += '<div><div class="font-weight-bold">' + list.name + '</div>';
-                    html += '<div class="text-muted small">' + list.members.length + ' members</div></div>';
-                    html += '<a href="/lists/' + list.id + '" class="btn btn-sm btn-outline-primary">View</a>';
-                    html += '</div></div>';
-                });
-            }
+            results.forEach(function(item) {
+                html += '<div class="search-result-item p-2 border-bottom">';
+                html += '<div class="font-weight-bold">' + (item.name || item.username || 'Result') + '</div>';
+                html += '</div>';
+            });
         }
         
         $results.html(html);

@@ -40,6 +40,7 @@
 
 @section('content')
     <div class="row no-gutters">
+        {{-- Left Column - Navigation/Sidebar --}}
         <div class="col-12 col-md-6 col-lg-4 border-right">
             {{-- Collections Header --}}
             <div class="pt-4 pl-4 px-3 d-flex justify-content-between pb-3 border-bottom">
@@ -76,38 +77,28 @@
                 </nav>
             </div>
 
-            {{-- Tab Content --}}
-            <div class="collections-content">
+            {{-- Sidebar Content - Only filters and lists for navigation --}}
+            <div class="collections-sidebar">
                 @if($activeTab == 'bookmarks')
-                    {{-- BOOKMARKS TAB CONTENT --}}
-                    <div id="bookmarks-tab-content" class="tab-content active">
-                        {{-- Bookmark Type Filters --}}
-                        @include('elements.bookmarks.bookmarks-menu', [
-                            'bookmarkTypes' => $bookmarkTypes, 
-                            'activeTab' => $activeBookmarkType ?? 'all',
-                            'variant' => 'desktop'
-                        ])
-
-                        {{-- Bookmarked Posts --}}
-                        <div class="bookmarks-posts-container">
-                            @if(isset($posts) && count($posts))
-                                <div class="posts-wrapper" id="posts-wrapper">
-                                    @foreach($posts as $post)
-                                        @include('elements.feed.post-box', ['post' => $post])
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="empty-state text-center p-4">
-                                    @include('elements.icon',['icon'=>'bookmarks-outline','classes'=>'mb-3 text-muted','variant'=>'xlarge'])
-                                    <h6 class="text-muted">{{__('No bookmarks yet')}}</h6>
-                                    <p class="text-muted small">{{__('Save posts to see them here')}}</p>
-                                </div>
-                            @endif
+                    {{-- Bookmark Type Filters (Left Sidebar) - Inline Collections Menu --}}
+                    <div class="card-settings border-bottom">
+                        <div class="list-group list-group-sm list-group-flush">
+                            @foreach($bookmarkTypes as $route => $setting)
+                                <a href="{{route('my.collections.index', ['tab' => 'bookmarks', 'type' => $route])}}" class="{{($activeBookmarkType ?? 'all') == $route ? 'active' : ''}} list-group-item list-group-item-action d-flex justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        @include('elements.icon',['icon'=>$setting['icon'].'-outline','centered'=>'false','classes'=>'mr-3','variant'=>'medium'])
+                                        <span>{{__(ucfirst($route))}}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        @include('elements.icon',['icon'=>'chevron-forward-outline'])
+                                    </div>
+                                </a>
+                            @endforeach
                         </div>
                     </div>
                 @elseif($activeTab == 'lists')
-                    {{-- LISTS TAB CONTENT --}}
-                    <div id="lists-tab-content" class="tab-content active">
+                    {{-- Lists Navigation (Left Sidebar) --}}
+                    <div class="lists-sidebar">
                         {{-- Create New List Button --}}
                         <div class="p-3 border-bottom">
                             <button class="btn btn-primary btn-block btn-sm" onclick="Lists.showListEditDialog('create')">
@@ -116,15 +107,15 @@
                             </button>
                         </div>
 
-                        {{-- User Lists --}}
-                        <div class="lists-container">
+                        {{-- User Lists Navigation --}}
+                        <div class="lists-navigation">
                             @if(isset($lists) && count($lists))
                                 @foreach($lists as $list)
                                     @if(isset($list->id))
                                     <div class="list-item border-bottom p-3">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="list-info">
-                                                <a href="{{route('my.lists.show', ['list_id' => $list->id])}}" class="list-name text-decoration-none">
+                                                <a href="{{route('my.collections.index', ['tab' => 'lists', 'list_id' => $list->id])}}" class="list-name text-decoration-none">
                                                     <h6 class="mb-1 text-bold">{{$list->name}}</h6>
                                                 </a>
                                                 <div class="list-meta text-muted small">
@@ -135,23 +126,9 @@
                                                 </div>
                                             </div>
                                             <div class="list-actions">
-                                                <a href="{{route('my.lists.show', ['list_id' => $list->id])}}" class="btn btn-outline-primary btn-sm">
+                                                <a href="{{route('my.collections.index', ['tab' => 'lists', 'list_id' => $list->id])}}" class="btn btn-outline-primary btn-sm">
                                                     {{__('View')}}
                                                 </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @else
-                                    <div class="list-item border-bottom p-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="list-info">
-                                                <h6 class="mb-1 text-bold">{{$list->name}}</h6>
-                                                <div class="list-meta text-muted small">
-                                                    <span>{{count($list->members)}} {{__('members')}}</span>
-                                                    @if(isset($list->posts_count))
-                                                        <span class="ml-2">{{$list->posts_count}} {{__('posts')}}</span>
-                                                    @endif
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -161,7 +138,7 @@
                                 <div class="empty-state text-center p-4">
                                     @include('elements.icon',['icon'=>'list-outline','classes'=>'mb-3 text-muted','variant'=>'xlarge'])
                                     <h6 class="text-muted">{{__('No lists yet')}}</h6>
-                                    <p class="text-muted small">{{__('Create lists to organize users')}}</p>
+                                    <p class="text-muted small">{{__('Create lists to organize your content')}}</p>
                                 </div>
                             @endif
                         </div>
@@ -170,14 +147,47 @@
             </div>
         </div>
 
-        {{-- Right Column - Preview/Details --}}
-        <div class="col-12 col-md-6 col-lg-8 d-none d-md-block">
-            <div class="collections-preview-area">
-                <div class="empty-preview text-center p-5">
-                    @include('elements.icon',['icon'=>'albums-outline','classes'=>'mb-3 text-muted','variant'=>'xlarge'])
-                    <h5 class="text-muted">{{__('Your Collections')}}</h5>
-                    <p class="text-muted">{{__('Manage your bookmarks and lists in one place')}}</p>
-                </div>
+        {{-- Right Column - MAIN CONTENT AREA --}}
+        <div class="col-12 col-md-6 col-lg-8">
+            <div class="collections-main-content">
+                @if($activeTab == 'bookmarks')
+                    {{-- BOOKMARKS MAIN CONTENT (Right Column) --}}
+                    <div class="bookmarks-main-content p-3">
+                        @if(isset($posts) && count($posts))
+                            <div class="posts-wrapper" id="posts-wrapper">
+                                @foreach($posts as $post)
+                                    @include('elements.feed.post-box', ['post' => $post])
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="empty-state text-center p-4">
+                                @include('elements.icon',['icon'=>'bookmarks-outline','classes'=>'mb-3 text-muted','variant'=>'xlarge'])
+                                <h6 class="text-muted">{{__('No bookmarks yet')}}</h6>
+                                <p class="text-muted small">{{__('Save posts to see them here')}}</p>
+                            </div>
+                        @endif
+                    </div>
+                @elseif($activeTab == 'lists')
+                    {{-- LISTS MAIN CONTENT (Right Column) --}}
+                    <div class="lists-main-content p-3">
+                        <div class="collections-preview-area">
+                            <div class="empty-preview text-center p-5">
+                                @include('elements.icon',['icon'=>'albums-outline','classes'=>'mb-3 text-muted','variant'=>'xlarge'])
+                                <h5 class="text-muted">{{__('Select a List')}}</h5>
+                                <p class="text-muted">{{__('Click on a list from the sidebar to view its contents')}}</p>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    {{-- Default empty state --}}
+                    <div class="collections-preview-area">
+                        <div class="empty-preview text-center p-5">
+                            @include('elements.icon',['icon'=>'albums-outline','classes'=>'mb-3 text-muted','variant'=>'xlarge'])
+                            <h5 class="text-muted">{{__('Your Collections')}}</h5>
+                            <p class="text-muted">{{__('Manage your bookmarks and lists in one place')}}</p>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
