@@ -1,292 +1,127 @@
-<div class="post-box" data-postID="{{$post->id}}">
-    {{--    Post header --}}
-    <div class="post-header pl-3 pr-3 ">
-        <div class="d-flex">
-            <div class="avatar-wrapper">
-                {{-- CLICKABLE AVATAR: Wraps avatar image in profile link --}}
-                <a href="{{route('profile',['username'=>$post->user->username])}}" style="text-decoration: none;">
-                    <img class="avatar rounded-circle" src="{{$post->user->avatar}}" style="cursor: pointer;">
-                </a>
-            </div>
-            <div class="post-details pl-2 w-100{{$post->is_pinned ? '' : '' }}">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-bold"><a href="{{route('profile',['username'=>$post->user->username])}}" class="text-dark-r">{{$post->user->name}}</a></div>
-                        <div><a href="{{route('profile',['username'=>$post->user->username])}}" class="text-dark-r text-hover"><span>@</span>{{$post->user->username}}</a></div>
+<!-- resources/views/elements/feed/post-box-debug.blade.php -->
+<!-- DEBUGGING VERSION - Replace your post-box.blade.php with this temporarily -->
+
+<div class="post-box" data-post-id="{{$post->id}}">
+    <div class="card mb-3 border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5>DEBUG POST #{{$post->id}}</h5>
+        </div>
+        <div class="card-body">
+            <!-- Debug Information Grid -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h6>POST OWNER INFO:</h6>
+                        <ul class="mb-0">
+                            <li>Post Owner ID: <strong>{{$post->user_id}}</strong></li>
+                            <li>Post Owner Username: <strong>{{$post->user->username ?? 'N/A'}}</strong></li>
+                            <li>Is Paid Profile: <strong>{{$post->user->paid_profile ? 'YES (PAID)' : 'NO (FREE)'}}</strong></li>
+                            <li>Is Open Profile: <strong>{{$post->user->open_profile ? 'YES (OPEN)' : 'NO (CLOSED)'}}</strong></li>
+                        </ul>
                     </div>
-
-                    <div class="d-flex">
-
-                        @if(Auth::check() && (($post->user_id === Auth::user()->id && $post->status == 0) || (Auth::user()->role_id === 1) && $post->status == 0) )
-                            <div class="pr-3 pr-md-3"><span class="badge badge-pill bg-gradient-faded-secondary">{{ucfirst(__("pending"))}}</span></div>
-                        @endif
-
-                        @if($post->expire_date)
-                            <div class="pr-3 pr-md-3">
-                                    <span class="badge badge-pill bg-gradient-faded-primary"  data-toggle="{{!$post->is_expired ? 'tooltip' : ''}}" data-placement="bottom" title="{{!$post->is_expired ? __('Expiring in') .''. \Carbon\Carbon::parse($post->expire_date)->diffForHumans(null,false,true) : ''}}">
-                                        {{!$post->is_expired ? ucfirst(__("Expiring")) : ucfirst(__("Expired"))}}
-                                    </span>
-                            </div>
-                        @endif
-                        @if(Auth::check() && $post->release_date && Auth::user()->id === $post->user_id && $post->is_scheduled)
-                            @if($post->release_date > \Carbon\Carbon::now())
-                                <div class="pr-3 pr-md-3">
-                                        <span class="badge badge-pill bg-gradient-faded-primary" data-toggle="{{$post->is_scheduled ? 'tooltip' : ''}}" data-placement="bottom" title="{{$post->is_scheduled ? __('Posting in') .''. \Carbon\Carbon::parse($post->release_date)->diffForHumans(null,false,true) : ''}}">
-                                            {{ucfirst(__("Scheduled"))}}
-                                        </span>
-                                </div>
-                            @endif
-                        @endif
-                        @if((Auth::check() && $post->price > 0) || (!Auth::check() && $post->price > 0))
-                            <div class="pr-3 pr-md-3"><span class="badge badge-pill bg-gradient-faded-primary">{{ucfirst(__("PPV"))}}</span></div>
-                        @endif
-
-                        @if(Auth::check() && $post->user_id === Auth::user()->id)
-                            <div class="pr-3 pr-md-3 pt-1 {{$post->is_pinned ? '' : 'd-none'}} pinned-post-label">
-                            <span data-toggle="tooltip" data-placement="bottom" title="{{__("Pinned post")}}">
-                                @include('elements.icon',['icon'=>'pricetag-outline', 'classes' => 'text-primary'])
-                            </span>
-                            </div>
-                        @endif
-
-                        <div class="pr-3 pr-md-3">
-                            <a class="text-dark-r text-hover d-flex" onclick="PostsPaginator.goToPostPageKeepingNav({{$post->id}},{{$post->postPage}},'{{route('posts.get',['post_id'=>$post->id,'username'=>$post->user->username])}}')" href="javascript:void(0)">
-                                @if($post->release_date)
-                                    {{\Carbon\Carbon::parse($post->release_date)->diffForHumans(null,false,true)}}
-                                @else
-                                    {{$post->created_at->diffForHumans(null,false,true)}}
-                                @endif
-                            </a>
-                        </div>
-
-                        <div class="dropdown {{GenericHelper::getSiteDirection() == 'rtl' ? 'dropright' : 'dropleft'}}">
-                            <a class="btn btn-sm text-dark-r text-hover btn-outline-{{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? 'dark' : 'light') : (Cookie::get('app_theme') == 'dark' ? 'dark' : 'light'))}} dropdown-toggle px-2 py-1 m-0" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                                @include('elements.icon',['icon'=>'ellipsis-horizontal-outline'])
-                            </a>
-                            <div class="dropdown-menu">
-                                <!-- Dropdown menu links -->
-                                <a class="dropdown-item" href="javascript:void(0)" onclick="shareOrCopyLink('{{route('posts.get',['post_id'=>$post->id,'username'=>$post->user->username])}}')">{{__('Copy post link')}}</a>
-                                @if(Auth::check())
-
-                                    {{--  Free/Open profiles should not get action buttons unless following --}}
-                                    @if($post->isSubbed)
-                                        <a class="dropdown-item bookmark-button {{PostsHelper::isPostBookmarked($post->bookmarks) ? 'is-active' : ''}}" href="javascript:void(0);" onclick="Post.togglePostBookmark({{$post->id}});">{{PostsHelper::isPostBookmarked($post->bookmarks) ? __('Remove the bookmark') : __('Bookmark this post') }} </a>
-
-                                        @if(Auth::user()->id === $post->user_id)
-                                            <a class="dropdown-item pin-button {{$post->is_pinned ? 'is-active' : ''}}" href="javascript:void(0);" onclick="Post.togglePostPin({{$post->id}});">{{$post->is_pinned ? __('Un-pin post') : __('Pin this post') }} </a>
-                                        @endif
-                                        @if(Auth::check() && Auth::user()->id != $post->user->id)
-                                            <div class="dropdown-divider"></div>
-                                            @if(ListsHelper::isUserFollowing(Auth::user()->id, $post->user->id))
-                                                <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showListManagementConfirmation('{{'unfollow'}}', {{$post->user->id}});">{{__('Unfollow')}}</a>
-                                            @endif
-                                            <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showListManagementConfirmation('{{'block'}}', {{$post->user->id}});">{{__('Block')}}</a>
-                                        @endif
-
-                                    @endif
-
-                                    @if(Auth::check() && Auth::user()->id != $post->user->id)
-                                        <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showReportBox({{$post->user->id}},{{$post->id}});">{{__('Report')}}</a>
-                                    @endif
-
-
-                                    @if(Auth::check() && Auth::user()->id == $post->user->id)
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="{{route('posts.edit',['post_id'=>$post->id])}}">{{__('Edit post')}}</a>
-                                        @if(!getSetting('compliance.minimum_posts_deletion_limit') || (getSetting('compliance.minimum_posts_deletion_limit') > 0 && count($post->user->posts) > getSetting('compliance.minimum_posts_deletion_limit')))
-                                            <a class="dropdown-item" href="javascript:void(0);" onclick="Post.confirmPostRemoval({{$post->id}});">{{__('Delete post')}}</a>
-                                        @endif
-                                    @endif
-                                @endif
-                            </div>
-                        </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="alert alert-warning">
+                        <h6>VIEWER INFO:</h6>
+                        <ul class="mb-0">
+                            <li>Your ID: <strong>{{Auth::check() ? Auth::user()->id : 'NOT LOGGED IN'}}</strong></li>
+                            <li>Are you owner?: <strong>{{Auth::check() && Auth::user()->id == $post->user_id ? 'YES' : 'NO'}}</strong></li>
+                            <li>Are you admin?: <strong>{{Auth::check() && Auth::user()->role_id == 1 ? 'YES' : 'NO'}}</strong></li>
+                        </ul>
                     </div>
-
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="alert alert-success">
+                        <h6>POST SETTINGS:</h6>
+                        <ul class="mb-0">
+                            <li>Post Price: <strong>${{$post->price ?? 0}}</strong></li>
+                            <li>Is PPV: <strong>{{$post->price > 0 ? 'YES' : 'NO (FREE)'}}</strong></li>
+                            <li>Has Attachments: <strong>{{count($post->attachments) > 0 ? 'YES ('.count($post->attachments).')' : 'NO'}}</strong></li>
+                            <li>Content Type: <strong>{{$post->content_type ?? 'N/A'}}</strong></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    {{--    Post text --}}
-    <div class="post-content mt-3 {{count($post->attachments) ? "mb-3" : ""}} pl-3 pr-3">
-        <div class="text-break post-content-data {{ getSetting('feed.enable_post_description_excerpts') ? 'line-clamp-3' : '' }}">
-            @if(PostsHelper::shouldHidePostText($post))
-                @if(!count($post->attachments))
-                    <span class="small font-italic">{{ __("Hidden text, subscription or unlock required.") }}</span>
-                @endif
-            @else
-                {!! GenericHelper::parseSafeHTML($post->text) !!}
-            @endif
-        </div>
-
-        @if(getSetting('feed.enable_post_description_excerpts'))
-            <div class="text-primary pointer-cursor show-more-actions {{count($post->attachments) ? "mb-3" : ""}} d-none" onclick="Post.toggleFullDescription({{$post->id}})">
-                <span class="label-more">{{__('Show more')}}</span>
-                <span class="label-less d-none">{{__('Show less')}}</span>
+            
+            <!-- The Critical Debug Info -->
+            <div class="alert {{ $post->isSubbed ? 'alert-success' : 'alert-danger' }} mt-3">
+                <h5>🔍 SUBSCRIPTION STATUS:</h5>
+                <p class="mb-2"><strong>isSubbed Value: {{ $post->isSubbed ? 'TRUE ✅' : 'FALSE ❌' }}</strong></p>
+                <p class="mb-2"><strong>hasSub Value: {{ isset($post->hasSub) ? ($post->hasSub ? 'TRUE ✅' : 'FALSE ❌') : 'NOT SET' }}</strong></p>
+                
+                @php
+                    // Manual subscription check
+                    $hasActiveSubManual = false;
+                    if(Auth::check() && $post->user_id != Auth::user()->id) {
+                        $hasActiveSubManual = \App\Providers\PostsHelperServiceProvider::hasActiveSub(Auth::user()->id, $post->user_id);
+                    }
+                @endphp
+                
+                <p class="mb-0"><strong>Manual Sub Check: {{ $hasActiveSubManual ? 'YES - YOU HAVE ACTIVE SUB ✅' : 'NO - NO ACTIVE SUB ❌' }}</strong></p>
             </div>
-        @endif
-    </div>
-
-    {{-- Post media --}}
-    @if(count($post->attachments) > 0)
-        <div class="post-media">
-            @php
-                // Create simple boolean flags for clarity
-                $isOwnerOrAdmin = (Auth::check() && (Auth::user()->id === $post->user_id || Auth::user()->role_id === 1));
-                $isSubscribed = PostsHelper::isPostSubscriptionUnlocked($post);
-                $isPayPerView = $post->price > 0;
-                $isPPVUnlocked = $isPayPerView && Auth::check() && PostsHelper::hasUserUnlockedPost($post->postPurchases);
-
-                // Determine if the content should be shown
-                $canViewContent = $isOwnerOrAdmin || $isSubscribed;
-                if ($isPayPerView && !$isOwnerOrAdmin) {
-                    $canViewContent = $isPPVUnlocked;
-                }
-            @endphp
-
-            @if($canViewContent)
-                {{-- If content is viewable, show the media --}}
-                @if(count($post->attachments) > 1)
-                    <div class="swiper-container mySwiper pointer-cursor">
-                        <div class="swiper-wrapper">
-                            @foreach($post->attachments as $attachment)
-                                <div class="swiper-slide">
-                                    @include('elements.feed.post-box-media-wrapper', ['attachment' => $attachment, 'isGallery' => true])
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="swiper-button swiper-button-next p-pill-white">@include('elements.icon',['icon'=>'chevron-forward-outline'])</div>
-                        <div class="swiper-button swiper-button-prev p-pill-white">@include('elements.icon',['icon'=>'chevron-back-outline'])</div>
-                        <div class="swiper-pagination"></div>
+            
+            <!-- Why is it locked/unlocked? -->
+            <div class="alert alert-primary">
+                <h6>WHY IS THIS POST {{ $post->isSubbed ? 'UNLOCKED' : 'LOCKED' }}?</h6>
+                @if(Auth::check())
+                    @if(Auth::user()->id == $post->user_id)
+                        <p>✅ You own this post</p>
+                    @elseif(Auth::user()->role_id == 1)
+                        <p>✅ You are an admin</p>
+                    @elseif($post->user->open_profile && getSetting('profiles.allow_users_enabling_open_profiles'))
+                        <p>✅ This is an open profile</p>
+                    @elseif(!$post->user->paid_profile)
+                        <p>✅ This is a FREE profile</p>
+                    @elseif($post->isSubbed)
+                        <p>✅ You have subscription access</p>
+                    @else
+                        <p>❌ You need a subscription (paid profile, not subscribed)</p>
+                    @endif
+                @else
+                    <p>❌ You are not logged in</p>
+                @endif
+            </div>
+            
+            <!-- Show actual subscription data from DB -->
+            @if(Auth::check())
+                @php
+                    $subscription = \App\Model\Subscription::where('sender_user_id', Auth::user()->id)
+                        ->where('recipient_user_id', $post->user_id)
+                        ->first();
+                @endphp
+                <div class="alert alert-dark">
+                    <h6>DATABASE SUBSCRIPTION CHECK:</h6>
+                    @if($subscription)
+                        <ul class="mb-0">
+                            <li>Subscription ID: <strong>{{$subscription->id}}</strong></li>
+                            <li>Status: <strong>{{$subscription->status}}</strong></li>
+                            <li>Expires: <strong>{{$subscription->expires_at}}</strong></li>
+                            <li>Is Active: <strong>{{$subscription->status == 'completed' || ($subscription->status == 'canceled' && $subscription->expires_at > \Carbon\Carbon::now()) ? 'YES ✅' : 'NO ❌'}}</strong></li>
+                        </ul>
+                    @else
+                        <p class="mb-0">NO SUBSCRIPTION FOUND IN DATABASE ❌</p>
+                    @endif
+                </div>
+            @endif
+            
+            <!-- Original Post Media (Small Preview) -->
+            <div class="mt-3 p-2 border">
+                <small class="text-muted">Original Content Preview:</small>
+                @if(count($post->attachments) > 0)
+                    <div style="max-height: 100px; overflow: hidden;">
+                        @if($post->isSubbed || (Auth::check() && Auth::user()->id == $post->user_id))
+                            <img src="{{$post->attachments[0]->path}}" class="img-fluid" style="max-height: 100px;">
+                        @else
+                            <div class="bg-secondary text-white p-3">🔒 LOCKED CONTENT</div>
+                        @endif
                     </div>
                 @else
-                    @include('elements.feed.post-box-media-wrapper', ['attachment' => $post->attachments[0], 'isGallery' => false])
+                    <p class="small">No attachments</p>
                 @endif
-            @else
-                {{-- If content is locked, show the appropriate lock screen --}}
-                @if($isPayPerView)
-                    @include('elements.feed.post-locked', ['type' => 'post', 'post' => $post])
-                @else
-                    @include('elements.feed.post-locked', ['type' => 'subscription'])
-                @endif
-            @endif
-        </div>
-    @endif
-
-    {{--    Post poll --}}
-    @if($post->poll && PostsHelper::isPostSubscriptionUnlocked($post) && !($post->price > 0 && (!Auth::check() || (Auth::user()->id !== $post->user_id && !PostsHelper::hasUserUnlockedPost($post->postPurchases)))))
-        <div class="post-poll-{{$post->poll->id}} mt-3 pl-3 pr-3">
-            @include('elements.feed.post-box-poll', [
-                'pollResults' => PostsHelper::getPollResults($post->poll),
-                'votedAnswer' => PostsHelper::hasUserVotedInPoll($post->poll->id)
-        ])
-        </div>
-    @endif
-
-    {{--    Post footer --}}
-    <div class="post-footer mt-3 pl-3 pr-3">
-        <div class="footer-actions d-flex justify-content-between">
-            <div class="d-flex">
-          {{-- FIXED LIKE BUTTON: Always works --}}
-<div class="h-pill h-pill-primary mr-1 rounded react-button {{PostsHelper::didUserReact($post->reactions) ? 'active' : ''}}" data-toggle="tooltip" data-placement="top" title="{{__('Like')}}" onclick="Post.reactTo('post',{{$post->id}})" style="cursor: pointer;">
-    @if(PostsHelper::didUserReact($post->reactions))
-        @include('elements.icon',['icon'=>'heart', 'variant' => 'medium', 'classes' =>"text-primary"])
-    @else
-        @include('elements.icon',['icon'=>'heart-outline', 'variant' => 'medium'])
-    @endif
-</div>
-
-{{-- FIXED COMMENT BUTTON: Always works --}}
-@if(Route::currentRouteName() != 'posts.get')
-    <div class="h-pill h-pill-primary mr-1 rounded" data-toggle="tooltip" data-placement="top" title="{{__('Show comments')}}" onClick="Post.showPostComments({{$post->id}},6)" style="cursor: pointer;">
-        @include('elements.icon',['icon'=>'chatbubble-outline', 'variant' => 'medium'])
-    </div>
-@endif
-
-                {{-- Tips --}}
-                @if(Auth::check() && $post->user->id != Auth::user()->id)
-@if(true) {{-- MINIMAL FIX: Always allow tips --}}
-                        <div class="h-pill h-pill-primary send-a-tip to-tooltip poi {{(!GenericHelper::creatorCanEarnMoney($post->user)) ? 'disabled' : ''}}"
-                             @if(!GenericHelper::creatorCanEarnMoney($post->user))
-                                 data-placement="top"
-                             title="{{__('This creator cannot earn money yet')}}">
-                            @else
-                                data-toggle="modal"
-                                data-target="#checkout-center"
-                                data-post-id="{{$post->id}}"
-                                data-type="tip"
-                                data-first-name="{{Auth::user()->first_name}}"
-                                data-last-name="{{Auth::user()->last_name}}"
-                                data-billing-address="{{Auth::user()->billing_address}}"
-                                data-country="{{Auth::user()->country}}"
-                                data-city="{{Auth::user()->city}}"
-                                data-state="{{Auth::user()->state}}"
-                                data-postcode="{{Auth::user()->postcode}}"
-                                data-available-credit="{{Auth::user()->wallet->total}}"
-                                data-username="{{$post->user->username}}"
-                                data-name="{{$post->user->name}}"
-                                data-avatar="{{$post->user->avatar}}"
-                                data-recipient-id="{{$post->user_id}}">
-                            @endif
-                            <div class=" d-flex align-items-center">
-                                @include('elements.icon',['icon'=>'gift-outline', 'variant' => 'medium'])
-                                <div class="ml-1 d-none d-lg-block"> {{__('Send a tip')}} </div>
-                            </div>
-                        </div>
-                    @else
-                        <div class="h-pill h-pill-primary send-a-tip disabled">
-                            <div class=" d-flex align-items-center">
-                                @include('elements.icon',['icon'=>'gift-outline', 'variant' => 'medium'])
-                                <div class="ml-1 d-none d-md-block"> {{__('Send a tip')}} </div>
-                            </div>
-                        </div>
-                    @endif
-                @endif
-            </div>
-            <div class="mt-0 d-flex align-items-center justify-content-center post-count-details">
-                <span class="ml-2-h">
-                    <strong class="text-bold post-reactions-label-count">{{count($post->reactions)}}</strong>
-                    <span class="post-reactions-label">{{trans_choice('likes', count($post->reactions))}}</span>
-                </span>
-                <span class="ml-2-h d-none d-lg-block">
-                    <a href="{{Route::currentRouteName() != 'posts.get' ? route('posts.get',['post_id'=>$post->id,'username'=>$post->user->username]) : '#comments'}}" class="text-dark-r text-hover">
-                        <strong class="post-comments-label-count">{{count($post->comments)}}</strong>
-                       <span class="post-comments-label">
-                        {{trans_choice('comments',  count($post->comments))}}
-                       </span>
-                    </a>
-                </span>
-                <span class="ml-2-h d-none d-lg-block">
-                    <strong class="post-tips-label-count">{{$post->tips_count}}</strong>
-                    <span class="post-tips-label">{{trans_choice('tips',$post->tips_count)}}</span>
-                </span>
+                <p class="small mt-2">Text: {{ Str::limit($post->text, 50) }}</p>
             </div>
         </div>
     </div>
-
-    {{--    Post comments --}}
-    <div class="post-comments d-none" {{Route::currentRouteName() == 'posts.get' ? 'id="comments"' : ''}}>
-        <hr>
-
-        <div class="px-3 post-comments-wrapper">
-            <div class="comments-loading-box">
-                @include('elements.preloading.messenger-contact-box',['limit'=>1])
-            </div>
-        </div>
-        <div class="show-all-comments-label pl-3 d-none">
-            @if(Route::currentRouteName() != 'posts.get')
-                <a href="javascript:void(0)" onclick="PostsPaginator.goToPostPageKeepingNav({{$post->id}},{{$post->postPage}},'{{route('posts.get',['post_id'=>$post->id,'username'=>$post->user->username])}}')">{{__('Show more')}}</a>
-            @else
-                <a onClick="CommentsPaginator.loadResults({{$post->id}});" href="javascript:void(0);">{{__('Show more')}}</a>
-            @endif
-        </div>
-        <div class="no-comments-label pl-3 d-none">
-            {{__('No comments yet.')}}
-        </div>
-        @if(Auth::check())
-            <hr>
-            @include('elements.feed.post-new-comment')
-        @endif
-    </div>
-
 </div>

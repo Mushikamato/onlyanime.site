@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Providers\AttachmentServiceProvider;
 use App\Providers\PostsHelperServiceProvider;
 use App\Providers\ListsHelperServiceProvider;
+use App\Model\UserList;
 use Cookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,8 +76,72 @@ class CollectionsController extends Controller
             
             $data['lists'] = $lists;
             
+            // If a specific list is requested, get its contents
+            $listId = $request->get('list_id');
+            if ($listId) {
+                // Find the selected list
+                $selectedList = $lists->firstWhere('id', $listId);
+                if ($selectedList) {
+                    $data['selectedList'] = $selectedList;
+                    $data['listMembers'] = $selectedList->members ?? [];
+                    
+                    // Get posts from list members using existing Laravel relationships
+                    if (isset($selectedList->members) && count($selectedList->members) > 0) {
+                        $memberIds = collect($selectedList->members)->pluck('id')->toArray();
+                        
+                        // Use the same logic as the original ListsController
+                        $startPage = PostsHelperServiceProvider::getFeedStartPage(PostsHelperServiceProvider::getPrevPage($request));
+                        $listPosts = PostsHelperServiceProvider::getPostsByUsersIds($memberIds, $startPage, false);
+                        $data['listPosts'] = $listPosts;
+                        
+                        // Add JavaScript configuration for lists with posts
+                        JavaScript::put([
+                            'paginatorConfig' => [
+                                'next_page_url' => $listPosts->nextPageUrl() ?? null,
+                                'prev_page_url' => $listPosts->previousPageUrl() ?? null,
+                                'current_page' => $listPosts->currentPage() ?? 1,
+                                'total' => $listPosts->total() ?? 0,
+                                'per_page' => $listPosts->perPage() ?? 15,
+                                'hasMore' => $listPosts->hasMorePages() ?? false,
+                            ],
+                            'initialPostIDs' => $listPosts->pluck('id')->toArray() ?? [],
+                            'collectionTab' => 'lists',
+                            'selectedListId' => $listId
+                        ]);
+                    } else {
+                        // For empty lists, provide safe defaults
+                        JavaScript::put([
+                            'paginatorConfig' => [
+                                'next_page_url' => null,
+                                'prev_page_url' => null,
+                                'current_page' => 1,
+                                'total' => 0,
+                                'per_page' => 15,
+                                'hasMore' => false,
+                            ],
+                            'initialPostIDs' => [],
+                            'collectionTab' => 'lists',
+                            'selectedListId' => $listId
+                        ]);
+                    }
+                } else {
+                    // List not found, provide safe defaults
+                    JavaScript::put([
+                        'initialPostIDs' => [],
+                        'collectionTab' => 'lists'
+                    ]);
+                }
+            } else {
+                // No specific list selected, provide safe defaults
+                JavaScript::put([
+                    'initialPostIDs' => [],
+                    'collectionTab' => 'lists'
+                ]);
+            }
+            
             JavaScript::put([
-                'collectionTab' => 'lists'
+                'collectionTab' => 'lists',
+                'selectedListId' => $listId
             ]);
         }
 

@@ -14,43 +14,98 @@
     .logo-style-18-btn {
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-width: 90px;
+      justify-content: flex-end;
+      width: 120px;
       height: 44px;
-      padding: 0 20px;
-      border-radius: 20px;
-      background: #fff;
-      border: 4px solid #55a8f9;
-      font-size: 1.17rem;
+      border-radius: 22px;
+      background: #ffffff;
+      border: 3px solid #ddd;
+      font-size: 0.9rem;
       font-weight: bold;
-      color: #55a8f9;
-      box-shadow: 0 4px 16px rgba(50,110,255,0.12);
-      transition: box-shadow 0.25s, background-color 0.25s, color 0.25s;
+      color: #666;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
       cursor: pointer;
       text-decoration: none;
       margin: 0 10px;
       user-select: none;
       position: relative;
       pointer-events: auto;
-      animation: cosplay-pulse 1.6s infinite alternate;
+      padding: 3px;
+      padding-right: 12px;
     }
-    .logo-style-18-btn.active-nsfw { background-color:#3483d6; color:#fff; border-color:#fff; }
-    @keyframes cosplay-pulse {
-      0% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);}
-      50% { transform: scale(1.08); box-shadow: 0 8px 32px rgba(50,110,255,0.17);}
-      100% { transform: scale(1); box-shadow: 0 4px 16px rgba(50,110,255,0.12);}
+
+    /* Toggle switch circle */
+    .logo-style-18-btn::before {
+      content: '';
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      left: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-    .logo-style-18-btn:hover, .logo-style-18-btn:focus-visible {
-      border-color:#3483d6; background:#55a8f9; color:#fff; transform:scale(1.11);
-      box-shadow:0 8px 28px 4px rgba(85,168,249,0.16);
-      animation-play-state: paused !important;
+
+    .logo-style-18-btn .icon-18 {
+      font-size: 1.1em;
+      margin-right: 4px;
     }
-    .logo-style-18-btn:active { filter:brightness(0.96); transform:scale(0.97); animation-play-state: paused !important; }
-    .logo-style-18-btn .icon-18 { font-size:1.36em; margin-right:7px; line-height:1; }
+
+    /* ON State (blue background) */
+    .logo-style-18-btn.active-nsfw {
+      background: #3483d6 !important;
+      border-color: #2968a3 !important;
+      color: white !important;
+      justify-content: flex-start;
+      padding-left: 12px;
+      padding-right: 3px;
+    }
+
+    /* Move circle to right when active */
+    .logo-style-18-btn.active-nsfw::before {
+      left: calc(100% - 38px);
+    }
+
+    /* Hover effects */
+    .logo-style-18-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .logo-style-18-btn.active-nsfw:hover {
+      background: #2968a3 !important;
+    }
+
+    /* Mobile adjustments */
     @media (max-width: 767.98px) {
       .header-center-btn { height:56px; align-items:flex-end; }
-      .logo-style-18-btn { min-width:64px; height:36px; font-size:1em; padding:0 12px; border-radius:11px; margin-left:100px; }
-      .logo-style-18-btn .icon-18 { font-size:1em; margin-right:2px; }
+      .logo-style-18-btn {
+        width: 90px;
+        height: 36px;
+        border-radius: 18px;
+        font-size: 0.8rem;
+        padding: 2px;
+        margin-left: 100px;
+      }
+      
+      .logo-style-18-btn::before {
+        width: 26px;
+        height: 26px;
+        left: 4px;
+      }
+      
+      .logo-style-18-btn.active-nsfw::before {
+        left: calc(100% - 30px);
+      }
+      
+      .logo-style-18-btn .icon-18 {
+        font-size: 0.9em;
+        margin-right: 2px;
+      }
     }
 
     /* ===== Glass dropdown for Language (light & dark aware) ===== */
@@ -104,12 +159,12 @@
                    class="logo-style-18-btn {{ Auth::user()->show_adult_content ? 'active-nsfw' : '' }}"
                    data-is-nsfw-on="{{ Auth::user()->show_adult_content ? 'true' : 'false' }}">
                     <span class="icon-18">🔞</span>
-                    <span>18+</span>
+                    <span>{{ Auth::user()->show_adult_content ? 'ON' : 'OFF' }}</span>
                 </a>
             @else
                 <a href="{{ route('login') }}" class="logo-style-18-btn">
                     <span class="icon-18">🔞</span>
-                    <span>18+</span>
+                    <span>OFF</span>
                 </a>
             @endif
         </div>
@@ -234,7 +289,7 @@
     </div>
 </nav>
 
-{{-- 18+ Button Script - COMPLEТELY UNTOUCHED --}}
+{{-- 18+ Button Script - COMPLETELY UNTOUCHED --}}
 @if(Auth::check())
 @push('scripts')
 <script>
