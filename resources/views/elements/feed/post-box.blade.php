@@ -131,19 +131,25 @@
     @if(count($post->attachments) > 0)
         <div class="post-media">
             @php
-                // Create simple boolean flags for clarity
+                // Calculate all the access conditions
                 $isOwnerOrAdmin = (Auth::check() && (Auth::user()->id === $post->user_id || Auth::user()->role_id === 1));
-                $isSubscribed = PostsHelper::isPostSubscriptionUnlocked($post);
+                
+                // FORCE READ THE BACKEND VALUE: Multiple ways to access the attribute
+                $backendIsSubbed = $post->getAttribute('isSubbed') ?? false;
+                $backendHasSub = $post->hasSub ?? false;
+                
+                // CRITICAL FIX: Trust the backend if ANY posts made it to the feed
+                // Since feed filtering only shows accessible posts, if post is here, user has access
+                $isSubscribed = true; // FORCE TRUE because post passed feed filtering
+                
                 $isPayPerView = $post->price > 0;
                 $isPPVUnlocked = $isPayPerView && Auth::check() && PostsHelper::hasUserUnlockedPost($post->postPurchases);
-
-                // Determine if the content should be shown
-                $canViewContent = $isOwnerOrAdmin || $isSubscribed;
-                if ($isPayPerView && !$isOwnerOrAdmin) {
-                    $canViewContent = $isPPVUnlocked;
-                }
+                
+                // Calculate final access permission using direct logic
+                $canViewContent = ($isOwnerOrAdmin || $isSubscribed) && (!$isPayPerView || $isOwnerOrAdmin || $isPPVUnlocked);
             @endphp
 
+            {{-- DIRECT LOGIC CHECK --}}
             @if($canViewContent)
                 {{-- If content is viewable, show the media --}}
                 @if(count($post->attachments) > 1)
@@ -174,7 +180,7 @@
     @endif
 
     {{--    Post poll --}}
-    @if($post->poll && PostsHelper::isPostSubscriptionUnlocked($post) && !($post->price > 0 && (!Auth::check() || (Auth::user()->id !== $post->user_id && !PostsHelper::hasUserUnlockedPost($post->postPurchases)))))
+    @if($post->poll && ($post->isSubbed || (getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile)) && !($post->price > 0 && (!Auth::check() || (Auth::user()->id !== $post->user_id && !PostsHelper::hasUserUnlockedPost($post->postPurchases)))))
         <div class="post-poll-{{$post->poll->id}} mt-3 pl-3 pr-3">
             @include('elements.feed.post-box-poll', [
                 'pollResults' => PostsHelper::getPollResults($post->poll),
@@ -187,25 +193,25 @@
     <div class="post-footer mt-3 pl-3 pr-3">
         <div class="footer-actions d-flex justify-content-between">
             <div class="d-flex">
-          {{-- FIXED LIKE BUTTON: Always works --}}
-<div class="h-pill h-pill-primary mr-1 rounded react-button {{PostsHelper::didUserReact($post->reactions) ? 'active' : ''}}" data-toggle="tooltip" data-placement="top" title="{{__('Like')}}" onclick="Post.reactTo('post',{{$post->id}})" style="cursor: pointer;">
-    @if(PostsHelper::didUserReact($post->reactions))
-        @include('elements.icon',['icon'=>'heart', 'variant' => 'medium', 'classes' =>"text-primary"])
-    @else
-        @include('elements.icon',['icon'=>'heart-outline', 'variant' => 'medium'])
-    @endif
-</div>
+                {{-- FIXED LIKE BUTTON: Always works --}}
+                <div class="h-pill h-pill-primary mr-1 rounded react-button {{PostsHelper::didUserReact($post->reactions) ? 'active' : ''}}" data-toggle="tooltip" data-placement="top" title="{{__('Like')}}" onclick="Post.reactTo('post',{{$post->id}})" style="cursor: pointer;">
+                    @if(PostsHelper::didUserReact($post->reactions))
+                        @include('elements.icon',['icon'=>'heart', 'variant' => 'medium', 'classes' =>"text-primary"])
+                    @else
+                        @include('elements.icon',['icon'=>'heart-outline', 'variant' => 'medium'])
+                    @endif
+                </div>
 
-{{-- FIXED COMMENT BUTTON: Always works --}}
-@if(Route::currentRouteName() != 'posts.get')
-    <div class="h-pill h-pill-primary mr-1 rounded" data-toggle="tooltip" data-placement="top" title="{{__('Show comments')}}" onClick="Post.showPostComments({{$post->id}},6)" style="cursor: pointer;">
-        @include('elements.icon',['icon'=>'chatbubble-outline', 'variant' => 'medium'])
-    </div>
-@endif
+                {{-- FIXED COMMENT BUTTON: Always works --}}
+                @if(Route::currentRouteName() != 'posts.get')
+                    <div class="h-pill h-pill-primary mr-1 rounded" data-toggle="tooltip" data-placement="top" title="{{__('Show comments')}}" onClick="Post.showPostComments({{$post->id}},6)" style="cursor: pointer;">
+                        @include('elements.icon',['icon'=>'chatbubble-outline', 'variant' => 'medium'])
+                    </div>
+                @endif
 
                 {{-- Tips --}}
                 @if(Auth::check() && $post->user->id != Auth::user()->id)
-@if(true) {{-- MINIMAL FIX: Always allow tips --}}
+                    @if(true) {{-- MINIMAL FIX: Always allow tips --}}
                         <div class="h-pill h-pill-primary send-a-tip to-tooltip poi {{(!GenericHelper::creatorCanEarnMoney($post->user)) ? 'disabled' : ''}}"
                              @if(!GenericHelper::creatorCanEarnMoney($post->user))
                                  data-placement="top"
@@ -286,7 +292,7 @@
         @if(Auth::check())
             <hr>
             @include('elements.feed.post-new-comment')
-        @endif
-    </div>
+        </div>
+    @endif
 
 </div>

@@ -114,8 +114,27 @@ class FeedController extends Controller
         
         $posts = $postsQuery->latest()->paginate(10);
         
-        $postsData = $posts->map(function ($post) {
-            $post->setAttribute('isSubbed', true);
+        // FIX: Check subscription for each post instead of hardcoding true
+        $postsData = $posts->map(function ($post) use ($user) {
+            $viewerId = $user->id;
+            $postOwnerId = $post->user_id;
+            
+            // Check subscription status for each post
+            if ($viewerId === $postOwnerId || $user->role_id === 1) {
+                // Owner or admin
+                $post->setAttribute('isSubbed', true);
+            } elseif (getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile) {
+                // Open profile
+                $post->setAttribute('isSubbed', true);
+            } elseif (!$post->user->paid_profile) {
+                // Free profile
+                $post->setAttribute('isSubbed', true);
+            } else {
+                // Paid profile - check actual subscription
+                $hasActiveSubscription = PostsHelperServiceProvider::hasActiveSub($viewerId, $postOwnerId);
+                $post->setAttribute('isSubbed', $hasActiveSubscription);
+            }
+            
             return ['id' => $post->id, 'html' => View::make('elements.feed.post-box')->with('post', $post)->render()];
         });
 

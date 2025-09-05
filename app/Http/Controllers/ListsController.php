@@ -234,14 +234,69 @@ class ListsController extends Controller
 
     /**
      * Method used for adding/removing an user from followers list.
+     * *** ENHANCED: Now auto-creates/removes subscriptions for free profiles ***
      * @param ManageUserFollowsRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function manageUserFollows(ManageUserFollowsRequest $request) {
         $userId = $request->get('user_id');
+        $currentAction = ListsHelperServiceProvider::getUserFollowingType($userId);
+        
         try {
-            ListsHelperServiceProvider::managePredefinedUserMemberList(Auth::user()->id, $userId, ListsHelperServiceProvider::getUserFollowingType($userId));
+            // Perform the original follow/unfollow action
+            ListsHelperServiceProvider::managePredefinedUserMemberList(Auth::user()->id, $userId, $currentAction);
+            
+            // *** NEW: Auto-create/remove subscriptions for free profiles ***
+            if ($currentAction === 'follow') {
+                $targetUser = \App\User::find($userId);
+                if ($targetUser && !$targetUser->paid_profile) {
+                    // This is a free profile, create a subscription record if it doesn't exist
+                    $existingSubscription = \App\Model\Subscription::where('sender_user_id', Auth::user()->id)
+                        ->where('recipient_user_id', $userId)
+                        ->first();
+                    
+                    if (!$existingSubscription) {
+                        \App\Model\Subscription::create([
+                            'sender_user_id' => Auth::user()->id,
+                            'recipient_user_id' => $userId,
+                            'status' => 'completed',
+                            'amount' => 0.00,
+                            'currency' => 'USD',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        
+                        \Log::info("Auto-created free subscription", [
+                            'follower' => Auth::user()->id,
+                            'followed' => $userId,
+                            'username' => $targetUser->username,
+                        ]);
+                    }
+                }
+            }
+            elseif ($currentAction === 'unfollow') {
+                $targetUser = \App\User::find($userId);
+                if ($targetUser && !$targetUser->paid_profile) {
+                    // Remove the auto-created subscription for free profile
+                    \App\Model\Subscription::where('sender_user_id', Auth::user()->id)
+                        ->where('recipient_user_id', $userId)
+                        ->where('amount', 0.00)
+                        ->delete();
+                        
+                    \Log::info("Removed free subscription", [
+                        'follower' => Auth::user()->id,
+                        'unfollowed' => $userId,
+                        'username' => $targetUser->username,
+                    ]);
+                }
+            }
+            
         } catch (\Exception $exception){
+            \Log::error("Error in manageUserFollows", [
+                'error' => $exception->getMessage(),
+                'user_id' => $userId,
+                'action' => $currentAction,
+            ]);
             return response()->json(['success' => false, 'text' => ListsHelperServiceProvider::getUserFollowingType($userId)]);
         }
 

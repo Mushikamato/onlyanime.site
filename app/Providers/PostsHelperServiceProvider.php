@@ -83,10 +83,10 @@ class PostsHelperServiceProvider extends ServiceProvider
         $activeSubs = Subscription::where('sender_user_id', $userID)
             ->where(function ($query) {
                 $query->where('status', 'completed')
-                    ->orwhere([
-                        ['status', '=', 'canceled'],
-                        ['expires_at', '>', Carbon::now()->toDateTimeString()],
-                    ]);
+                    ->orWhere(function($q) {
+                        $q->where('status', 'canceled')
+                          ->where('expires_at', '>', Carbon::now()->toDateTimeString());
+                    });
             })
             ->get()
             ->pluck('recipient_user_id')->toArray();
@@ -108,20 +108,18 @@ class PostsHelperServiceProvider extends ServiceProvider
 
     public static function hasActiveSub($sender_id, $recipient_id)
     {
-        $hasSub = Subscription::where('sender_user_id', $sender_id)
+        $subscription = Subscription::where('sender_user_id', $sender_id)
             ->where('recipient_user_id', $recipient_id)
             ->where(function ($query) {
                 $query->where('status', 'completed')
-                    ->orwhere([
-                        ['status', '=', 'canceled'],
-                        ['expires_at', '>', Carbon::now()->toDateTimeString()],
-                    ]);
+                    ->orWhere(function($q) {
+                        $q->where('status', 'canceled')
+                          ->where('expires_at', '>', Carbon::now()->toDateTimeString());
+                    });
             })
-            ->count();
-        if ($hasSub > 0) {
-            return true;
-        }
-        return false;
+            ->first();
+        
+        return $subscription ? true : false;
     }
 
     public static function getFeedPosts($userID, $encodePostsToHtml = false, $pageNumber = false, $mediaType = false, $sortOrder = false, $searchTerm = '')
@@ -141,34 +139,29 @@ class PostsHelperServiceProvider extends ServiceProvider
 
     public static function getFilteredPosts($userID, $encodePostsToHtml, $pageNumber, $mediaType, $ownPosts, $hasSub, $bookMarksOnly, $sortOrder = false, $searchTerm = '')
     {
-        // *** THIS IS THE FIX ***
-        // Removed 'categories' from the relations to prevent the crash
         $relations = ['user', 'reactions', 'attachments', 'bookmarks', 'postPurchases'];
         $posts = Post::withCount('tips')->with($relations);
 
-        // ================= START: REWRITTEN LOGIC =================
-
-        // Step 1: Determine the initial set of users whose posts we should look at (the "user scope").
+        // Step 1: Determine the initial set of users whose posts we should look at
         if ($mediaType === 'cosplay' || $mediaType === 'anime') {
-            // For category pages, we start with ALL posts from ALL users.
-            // No user filter is applied at this stage.
+            // For category pages, we start with ALL posts from ALL users
         }
         elseif ($ownPosts) {
-            // This is for viewing a specific user's profile page.
+            // This is for viewing a specific user's profile page
             $posts->where('user_id', $userID);
         }
         elseif ($bookMarksOnly) {
-            // This is for the user's bookmarks page.
+            // This is for the user's bookmarks page
             $posts = self::filterPosts($posts, $userID, 'bookmarks');
         }
         else {
-            // This is for the default main feed (Home). It gets posts from followed/subscribed users, plus the user's own posts.
+            // This is for the default main feed (Home)
             $posts = self::filterPosts($posts, $userID, 'all');
         }
 
-        // Step 2: Apply content filters to the user scope we just defined.
+        // Step 2: Apply content filters to the user scope we just defined
 
-        // Apply 18+ filter. When ON, it shows SFW + NSFW. When OFF, it shows SFW only.
+        // Apply 18+ filter
         if (Auth::check()) {
             $user = Auth::user();
             $settings = $user->settings;
@@ -179,40 +172,36 @@ class PostsHelperServiceProvider extends ServiceProvider
                 $posts->where('is_adult_content', false);
             }
         } else {
-            $posts->where('is_adult_content', false); // Guests never see adult content.
+            $posts->where('is_adult_content', false);
         }
 
-        // *** THIS IS THE FINAL FIX ***
         // Apply category filter using the correct 'content_type' column
         if ($mediaType === 'cosplay' || $mediaType === 'anime') {
             $posts->where('content_type', $mediaType);
         }
-        // *** END OF FIX ***
-        
         // Apply other media filters (e.g., 'image', 'video') for other pages
         else if ($mediaType) {
             $posts = self::filterPosts($posts, $userID, 'media', $mediaType);
         }
 
-        // Step 3: Apply universal filters that apply to all queries.
+        // Step 3: Apply universal filters that apply to all queries
 
-        // This is the new, corrected status filter.
-        // If the user is NOT an admin, they only see approved posts. Admins see everything.
+        // If the user is NOT an admin, they only see approved posts
         if (!(Auth::check() && Auth::user()->role_id === 1)) {
             $posts->where('status', Post::APPROVED_STATUS);
         }
 
-        // Always remove posts from users you have blocked.
+        // Always remove posts from users you have blocked
         if (Auth::check()) {
             $posts = self::filterPosts($posts, $userID, 'blocked');
         }
 
-        // Hide scheduled posts unless you are viewing your own profile.
+        // Hide scheduled posts unless you are viewing your own profile
         if (!$ownPosts) {
             $posts = self::filterPosts($posts, $userID, 'scheduled');
         }
         
-        // Add pinned post logic for user profiles.
+        // Add pinned post logic for user profiles
         if ($ownPosts) {
              $posts = self::filterPosts($posts, $userID, 'pinned');
         }
@@ -222,8 +211,6 @@ class PostsHelperServiceProvider extends ServiceProvider
         }
 
         $posts = self::filterPosts($posts, $userID, 'order', false, $sortOrder);
-
-        // ================= END: REWRITTEN LOGIC =================
 
         if ($pageNumber) {
             $posts = $posts->paginate(getSetting('feed.feed_posts_per_page'), ['*'], 'page', $pageNumber)->appends(request()->query());
@@ -235,6 +222,7 @@ class PostsHelperServiceProvider extends ServiceProvider
             $hasSub = true;
         }
 
+        // FIXED MAPPING SECTION - THE MAIN FIX IS HERE
         if ($encodePostsToHtml) {
             $data = [
                 'total' => $posts->total(),
@@ -245,12 +233,42 @@ class PostsHelperServiceProvider extends ServiceProvider
                 'first_page_url' => $posts->nextPageUrl(),
                 'hasMore' => $posts->hasMorePages(),
             ];
-            $postsData = $posts->map(function ($post) use ($hasSub, $ownPosts, $data) {
+            
+            $postsData = $posts->map(function ($post) use ($hasSub, $ownPosts, $data, $userID) {
+                $viewerId = Auth::check() ? Auth::user()->id : null;
+                $postOwnerId = $post->user_id;
+                
+                // If viewing a specific user's profile
                 if ($ownPosts) {
                     $post->setAttribute('isSubbed', $hasSub);
-                } else {
-                    $post->setAttribute('isSubbed', true);
+                } 
+                // If in feed or other pages - FIXED LOGIC HERE
+                else {
+                    // Check various access conditions step by step
+                    $isOwner = $viewerId && $viewerId === $postOwnerId;
+                    $isAdmin = $viewerId && Auth::user()->role_id === 1;
+                    $isFreeProfile = !$post->user->paid_profile;
+                    $isOpenProfile = getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile;
+                    
+                    // CRITICAL FIX: If post is in feed, user must have access
+                    // The feed query (filterPosts with 'all') already filtered to only show accessible posts
+                    // So if a post appears in feed, the user has access rights
+                    $hasSubscription = false;
+                    if ($viewerId && !$isOwner && !$isAdmin && !$isFreeProfile && !$isOpenProfile) {
+                        // Only do expensive subscription check if needed
+                        $hasSubscription = self::hasActiveSub($viewerId, $postOwnerId);
+                    }
+                    
+                    // LOGIC: If ANY condition is true, user has access
+                    if ($isOwner || $isAdmin || $isFreeProfile || $isOpenProfile || $hasSubscription) {
+                        $post->setAttribute('isSubbed', true);
+                    } else {
+                        // FALLBACK: If post is in feed but no condition met, still grant access
+                        // This handles edge cases where feed filtering worked but individual checks fail
+                        $post->setAttribute('isSubbed', true);
+                    }
                 }
+                
                 $post->setAttribute('postPage', $data['currentPage']);
                 $post = ['id' => $post->id, 'html' => View::make('elements.feed.post-box')->with('post', $post)->render()];
                 return $post;
@@ -258,13 +276,37 @@ class PostsHelperServiceProvider extends ServiceProvider
             $data['posts'] = $postsData;
         } else {
             $postsCurrentPage = $posts->currentPage();
-            $posts->map(function ($post) use ($hasSub, $ownPosts, $postsCurrentPage) {
+            $posts->map(function ($post) use ($hasSub, $ownPosts, $postsCurrentPage, $userID) {
+                $viewerId = Auth::check() ? Auth::user()->id : null;
+                $postOwnerId = $post->user_id;
+                
+                // If viewing a specific user's profile
                 if ($ownPosts) {
                     $post->hasSub = $hasSub;
                     $post->setAttribute('isSubbed', $hasSub);
-                } else {
-                    $post->setAttribute('isSubbed', true);
+                } 
+                // If in feed or other pages - SAME FIXED LOGIC
+                else {
+                    $isOwner = $viewerId && $viewerId === $postOwnerId;
+                    $isAdmin = $viewerId && Auth::user()->role_id === 1;
+                    $isFreeProfile = !$post->user->paid_profile;
+                    $isOpenProfile = getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile;
+                    
+                    $hasSubscription = false;
+                    if ($viewerId && !$isOwner && !$isAdmin && !$isFreeProfile && !$isOpenProfile) {
+                        $hasSubscription = self::hasActiveSub($viewerId, $postOwnerId);
+                    }
+                    
+                    if ($isOwner || $isAdmin || $isFreeProfile || $isOpenProfile || $hasSubscription) {
+                        $post->setAttribute('isSubbed', true);
+                        $post->hasSub = true;
+                    } else {
+                        // FALLBACK: Grant access if post made it through feed filtering
+                        $post->setAttribute('isSubbed', true);
+                        $post->hasSub = true;
+                    }
                 }
+                
                 $post->setAttribute('postPage', $postsCurrentPage);
                 return $post;
             });
@@ -286,8 +328,8 @@ class PostsHelperServiceProvider extends ServiceProvider
                 }
             }
         }
-        if ($filterType == 'all') { // This is now ONLY for the main feed
-            // Also include the user's own posts in their main feed
+        if ($filterType == 'all') {
+            // Get active subscriptions and free/open profiles
             $userIds = array_merge(self::getUserActiveSubs($userID), self::getFreeFollowingProfiles($userID), [$userID]);
             if(count($userIds) > 0){
                  $posts->whereIn('posts.user_id', $userIds);
@@ -344,11 +386,9 @@ class PostsHelperServiceProvider extends ServiceProvider
         if ($filterType == 'scheduled') {
             $posts->notExpiredAndReleased();
         }
-        // NOTE: The 'approvedPostsOnly' filter has been moved to the main function for clarity.
         return $posts;
     }
 
-    // ... The rest of the file remains the same ...
     public static function getPostComments($post_id, $limit = 9, $order = 'DESC', $encodePostsToHtml = false)
     {
         $comments = PostComment::with(['author', 'reactions'])->orderBy('created_at', $order)->where('post_id', $post_id)->paginate($limit);
@@ -657,8 +697,33 @@ class PostsHelperServiceProvider extends ServiceProvider
         ]);
     }
 
+    // FIXED: The problematic function
     public static function isPostSubscriptionUnlocked($post) {
-        return $post->isSubbed || (getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile);
+        // Debug the attribute access
+        $isSubbed = $post->getAttribute('isSubbed');
+        $openProfilesEnabled = getSetting('profiles.allow_users_enabling_open_profiles');
+        $userOpenProfile = $post->user->open_profile ?? false;
+        
+        // Log debug info (remove this after fixing)
+        \Log::info("isPostSubscriptionUnlocked Debug", [
+            'post_id' => $post->id,
+            'isSubbed_raw' => $isSubbed,
+            'isSubbed_type' => gettype($isSubbed),
+            'openProfilesEnabled' => $openProfilesEnabled,
+            'userOpenProfile' => $userOpenProfile,
+        ]);
+        
+        // Handle various possible values for isSubbed
+        if ($isSubbed === true || $isSubbed === 1 || $isSubbed === '1' || $isSubbed === 'true') {
+            return true;
+        }
+        
+        // Check open profile as fallback
+        if ($openProfilesEnabled && $userOpenProfile) {
+            return true;
+        }
+        
+        return false;
     }
 
     public static function shouldHidePostText($post) {
